@@ -1,0 +1,12 @@
+{
+  "name": "ig-skill",
+  "description": "Claude skill for applying Institutional Grammar 2.0 (IG 2.0) coding to rule documents. Encodes institutional statements from regulations, policies, and statutes using IG Script notation.",
+  "version": "1.1.0",
+  "author": {
+    "name": "tomaso9"
+  },
+  "homepage": "https://github.com/tomaso9/ig-skill",
+  "repository": "https://github.com/tomaso9/ig-skill",
+  "license": "MIT",
+  "keywords": ["institutional-grammar", "policy-analysis", "IG2.0", "coding", "qualitative-research"]
+}

@@ -88,11 +88,11 @@ def compare_pair(run_a, run_b, name_a, name_b):
     kappa = cohens_kappa(types_a, types_b)
     print(f"\n  Type classification (REG / CONST / HYB):")
     print(f"    Raw agreement : {type_agree:.1%}")
-    print(f"    Cohen's κ     : {kappa:.3f}")
+    print(f"    Cohen's kappa : {kappa:.3f}")
 
     # --- Per-component ---
     print(f"\n  Component-level agreement:")
-    print(f"  {'Component':<12} {'Pres.agree':>11} {'κ (pres.)':>10} {'Content Jac.':>13}")
+    print(f"  {'Component':<12} {'Pres.agree':>11} {'kappa(p)':>10} {'Content Jac.':>13}")
     print(f"  {'-'*12} {'-'*11} {'-'*10} {'-'*13}")
 
     for col in COMPONENT_COLS:
@@ -125,7 +125,7 @@ def main(paths):
     runs = [load_csv(p) for p in paths]
     names = [os.path.basename(p) for p in paths]
 
-    print("\nIG SKILL — INTER-AGENT CONSISTENCY REPORT")
+    print("\nIG SKILL - INTER-AGENT CONSISTENCY REPORT")
     print(f"Comparing {len(runs)} runs: {', '.join(names)}")
 
     for (i, j) in combinations(range(len(runs)), 2):
@@ -133,10 +133,10 @@ def main(paths):
 
     print("\n" + "="*62)
     print("Interpretation guide:")
-    print("  κ ≥ 0.80  — strong consistency")
-    print("  κ 0.60–0.79 — moderate; review disagreements")
-    print("  κ < 0.60  — low; prompt needs refinement")
-    print("  Content Jaccard ≥ 0.70 — acceptable component-level agreement")
+    print("  kappa >= 0.80        -- strong consistency")
+    print("  kappa 0.60-0.79      -- moderate; review disagreements")
+    print("  kappa < 0.60         -- low; prompt needs refinement")
+    print("  Content Jaccard >= 0.70      -- acceptable component-level agreement")
     print()
 
 

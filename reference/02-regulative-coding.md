@@ -51,6 +51,21 @@ A(certifier) D(must) I(send) Bind(farmer) Bdir(notification of compliance) Cex(w
 - "audits on product stock" → qualifies the audit (type) → Object
 - "twice per year" → qualifies when the action occurs → Execution Constraint
 
+**Bdir vs. Bind for notification/reporting/filing statements:** When the statement involves sending, filing, forwarding, or notifying:
+- **Bdir** = the document, report, or notification itself (the thing sent/filed)
+- **Bind** = the recipient (the entity to/for whom it is sent)
+
+```
+A(certifier) D(must) I(send) Bind(farmer) Bdir(notification of compliance) Cex(within 30 days).
+A(applicant) D(shall) I(forward) Bdir(copies of permit applications) Bind(to the supplier of water).
+```
+
+Do not misclassify recipients preceded by prepositions ("to X", "with X") as Execution Constraints — consider them as Bind first.
+
+**Bdir_prop at IG Core:** Use `Bdir_prop` only when the policy functionally distinguishes the qualifier from the base object — that is, when different provisions apply to different subtypes of that object, or when the qualifier is itself a defined term. If the qualifier is merely descriptive and the same rules apply regardless, fold it into the `Bdir` text.
+- *"Copies of permit applications and notices of intent"* → `Bdir(copies of permit applications and notices of intent)` (one combined Bdir; no functional subtype distinction)
+- *"A written notification of noncompliance"* → `Bdir,p(written) Bdir(notification of noncompliance)` (only if "written" is a functionally distinct requirement in the regulation)
+
 #### Context: Activation Condition (Cac) vs. Execution Constraint (Cex)
 
 **Activation Condition**: Discretized setting or event that *activates* the non-context part of the statement.
@@ -63,14 +78,22 @@ A(certifier) D(must) I(send) Bind(farmer) Bdir(notification of compliance) Cex(w
 
 **Heuristic**: Can the action occur without this clause? If removing the clause changes *when* the rule applies → Activation Condition. If removing it only removes how → Execution Constraint.
 
+**Exception clauses in prohibitions:** When a prohibition contains "except [condition]" or "except under [permit/authority]", code the exception as **Cex** — it qualifies the scope of the prohibition without changing when it is triggered.
+- *"Transportation of hazardous materials is prohibited **except under permit** of the NYSDOT"* → `Cex(except under permit of the NYSDOT)`
+- *"Disposal... is prohibited **except for incidental deposition** from plowing operations"* → `Cex(except for incidental deposition from plowing operations)`
+
+Do **not** encode such exceptions as Or-else (O). O is reserved for consequence/sanction clauses (see below).
+
 ```
 Cac(Upon entrance into agreement with organic farmer), A(certifier) D(must) I(inspect)
 Bdir(farmer's operation) Cex(within 60 days).
 ```
 
 #### Or else (O)
+- Encodes **consequences or sanctions** for non-compliance — payoffs attached to the monitored statement
 - Encoded as a **vertically nested** statement using braces
 - Can itself contain horizontally nested statements
+- **O is not for exception clauses.** "Except under permit X" or "except as determined by Y" belongs in **Cex**. O is only used when there is an explicit consequence of transgression (e.g., "or else certifier will revoke certification").
 
 ```
 A(farmers) D(must not) I(apply) Bdir(synthetic chemicals) Cac(once certification is conferred),

@@ -52,8 +52,24 @@ Optional: **M** (Modal), **P** (Constituting Properties), **O** (Or else).
 - Can be physical or abstract; animate or inanimate
 
 #### Context (Cac / Cex)
-- Same rules as regulative statements (see [02-regulative-coding.md](02-regulative-coding.md))
-- Constitutive Activation Condition signals: change in the entity being constituted, or change in its constituting properties
+
+Cac and Cex apply to constitutive statements with the same force as to regulative statements. Do not skip these components simply because the statement is definitional or constitutive.
+
+**Activation Condition (Cac)** — a precondition that activates when or for whom the constitution takes effect:
+- Temporal triggers: *"Starting January 1..."*, *"As of the effective date..."*, *"Upon adoption..."*, *"After the election of..."*
+- Event triggers: *"In the event that the position becomes vacant..."*, *"Once the application is submitted..."*
+- Conditional qualifiers: *"Where applicable..."*, *"In cases where..."*, *"When the Council is constituted..."*
+
+**Execution Constraint (Cex)** — a clause qualifying how, in what procedural manner, or under what restrictions the constitution operates, without changing when it applies:
+- Procedural qualifiers: *"pursuant to..."*, *"in accordance with [Section X]..."*, *"as defined in..."*
+- Scope limiters: *"to the extent allowed by law"*, *"within the meaning of this Part"*, *"subject to approval by..."*
+- Functional purpose clauses: *"to [perform some function]"*, *"for the purpose of..."* (when clearly a constraint on how properties are exercised, not the properties themselves)
+
+**Decision rule — P vs. Cex:** Ask: *"Does this clause define what the entity IS (content of constitution) or HOW/UNDER WHAT CONDITIONS the entity operates?"* The former belongs in P; the latter is Cex.
+
+**When Cac/Cex is genuinely absent:** Pure definitional statements (*"X means Y"*) without temporal, conditional, or procedural qualifiers have no Cac/Cex. Leave both fields empty — do not infer a universal condition.
+
+**Signal to check:** Any adverbial clause, dependent clause, or prepositional phrase that is not core to P should be evaluated as Cac or Cex before leaving the fields empty. Apply the decision guide in [04-heuristics.md](04-heuristics.md#activation-condition-vs-execution-constraint-decision-guide).
 
 #### Or else (O)
 - Consequence of non-fulfillment; can be **existential** (e.g., invalidation)

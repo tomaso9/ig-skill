@@ -32,6 +32,18 @@ Convert passive statements to active form to make the Attributes explicit:
 - Active: *"[Certifier] must send farmers notifications of compliance within 30 days of facility inspections."*
 - Note: mark inferred actor with `[ ]`
 
+### Inferred Actor Labels (project convention)
+
+When the responsible actor must be inferred, use brackets `[ ]` and apply the following standard labels:
+
+| Situation | Standard label | Example |
+|-----------|---------------|---------|
+| Impersonal prohibition ("X is prohibited") | `[any person]` | `[any person] D([shall not]) I(discharge)...` |
+| Passive obligation where actor is clear from section context | `[actor inferred from context, e.g., applicant]` | `[applicant] D(shall) I(forward)...` |
+| Actor entirely unresolvable from text or context | `[actor]` | `[actor] D(must) I(report)...` |
+
+**Hint (codebook p. 65):** When a statement contains an aim linked to an object as a noun (passive construction), this signals a missing or implied actor. Check prepositional clauses such as "by [actor]" for clues. If found, that actor is the Attribute; if not, infer from institutional context and mark with `[ ]`.
+
 ### Statement Decomposition (Pre-processing for IG Core)
 
 Statements with multiple Aims should be decomposed into separate statements:

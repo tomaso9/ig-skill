@@ -111,6 +111,8 @@ Refer to reference files as needed:
 - [reference/05-symbols.md](reference/05-symbols.md) — IG Script symbol reference
 - [reference/06-nesting.md](reference/06-nesting.md) — nesting patterns
 
+**Cac/Cex in constitutive statements:** Do not skip context components for constitutive statements. Any adverbial clause, conditional phrase, or prepositional phrase not part of the Constituting Properties (P) must be evaluated as Cac or Cex. Signal words: *starting*, *as of*, *upon*, *where applicable*, *in the event that* → Cac; *in accordance with*, *pursuant to*, *as defined in*, *within the meaning of* → Cex. Pure definitional statements with no contextual qualifier may leave Cac/Cex empty.
+
 **If in-chat markdown was selected**, display each statement as:
 ```
 [S1] REGULATIVE | IG Core

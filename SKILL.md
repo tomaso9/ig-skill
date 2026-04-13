@@ -117,7 +117,17 @@ Present as a table with columns: ID | Type | Abbreviated Original Text
 
 3. Execute Steps 4 and 5 now, as the orchestrator, independently of the agents. Complete the pre-coding familiarization (Step 4) and statement identification table (Step 5) for the document. Do not encode components — stop after producing the statement ID list (S1, S2, … Sn) and type classifications. Save this list as your **reference statement list**.
 
-4. Dispatch 3 agents in parallel using `superpowers:dispatching-parallel-agents`. Each agent receives this instruction (substitute N = 1, 2, 3 for the run number):
+4. Use AskUserQuestion to present the statement list to the researcher and ask for confirmation before dispatching:
+
+   "Here is the statement list I identified for this document:
+
+   [paste the Step 5 statement ID table here]
+
+   Does this look complete? If any statements are missing or should be removed, let me know now. Otherwise reply 'yes' to proceed with agent dispatch."
+
+   Wait for the researcher's reply. If they provide corrections (additions or removals), update your reference statement list accordingly before proceeding. Do not dispatch agents until the researcher confirms.
+
+5. Dispatch 3 agents in parallel using `superpowers:dispatching-parallel-agents`. Each agent receives this instruction (substitute N = 1, 2, 3 for the run number):
 
 > You are an expert IG 2.0 coder. Apply the ig-code skill to the document below. Do not ask the user any questions — all settings are fixed.
 >
@@ -144,7 +154,7 @@ Present as a table with columns: ID | Type | Abbreviated Original Text
 >
 > Write to the output path and confirm the path and row count when done.
 
-5. Wait for all 3 agents to complete, then proceed to **Step 6.5**.
+6. Wait for all 3 agents to complete, then proceed to **Step 6.5**.
 
 ---
 

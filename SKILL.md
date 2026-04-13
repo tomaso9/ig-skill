@@ -70,6 +70,14 @@ Use AskUserQuestion to ask:
 
 Allow multi-select. Wait for the researcher's answer before proceeding.
 
+After recording the researcher's format preference, ask:
+
+**Question 3:** "Would you like to use **multi-agent mode**? Three independent agents will code the document separately. Any disagreement — in statement type, component presence, or component content — will be flagged for your review in a `_review.csv` file saved alongside your other outputs.
+- **Yes — multi-agent** (recommended for research use; slower)
+- **No — single agent** (faster)"
+
+Save the response as **Multi-Agent Mode**: enabled / disabled.
+
 ---
 
 ### Step 4 — Pre-Coding Familiarization
@@ -101,6 +109,46 @@ Present as a table with columns: ID | Type | Abbreviated Original Text
 
 ### Step 6 — Encode Each Statement
 
+**If Multi-Agent Mode is ENABLED**, skip the encoding below and do this instead:
+
+1. Derive the document base path (directory + stem, no extension). For example: if `$ARGUMENTS` is `C:\path\to\document.pdf`, the base is `C:\path\to\document`.
+
+2. Identify the skill directory: the directory from which you loaded `SKILL.md`.
+
+3. Dispatch 3 agents in parallel using `superpowers:dispatching-parallel-agents`. Each agent receives this instruction (substitute N = 1, 2, 3 for the run number):
+
+> You are an expert IG 2.0 coder. Apply the ig-code skill to the document below. Do not ask the user any questions — all settings are fixed.
+>
+> **Fixed settings:**
+> - Coding level: [Coding Level from Step 2]
+> - Output: CSV file only
+> - Output path: `[base]_IG_agent[N].csv`
+>
+> **Read these files in order:**
+> 1. `[skill_dir]/SKILL.md`
+> 2. `[skill_dir]/reference/01-components.md`
+> 3. `[skill_dir]/reference/02-regulative-coding.md`
+> 4. `[skill_dir]/reference/03-constitutive-coding.md`
+> 5. `[skill_dir]/reference/04-heuristics.md`
+> 6. `[skill_dir]/reference/05-symbols.md`
+> 7. `[skill_dir]/reference/06-nesting.md`
+> 8. `[document path]` — document to code
+>
+> **Execute Steps 1, 4, 5, 6, 7 from SKILL.md.** Skip Steps 2, 3, 8, 9, 10.
+>
+> The CSV must have exactly these columns:
+> `id, type, coding_level, original_text, A, A_prop, D, I, Bdir, Bdir_prop, Bind, Bind_prop, Cac, Cex, O, E, E_prop, M, F, P, P_prop, ig_script_full, notes`
+>
+> Write to the output path and confirm the path and row count when done.
+
+4. Wait for all 3 agents to complete, then proceed to **Step 6.5**.
+
+---
+
+**If Multi-Agent Mode is DISABLED**, proceed with single-agent encoding below.
+
+---
+
 For each statement (excluding NON-IS), encode it in IG Script at the confirmed coding level.
 
 Refer to reference files as needed:
@@ -121,6 +169,16 @@ Coded:    A,p(...) A(...) D(...) I(...) Bdir(...) Cex(...).
 Notes:    ...
 ```
 
+**If Multi-Agent Mode is ENABLED and the statement is flagged (`review_flag = TRUE`), use this format instead:**
+
+```
+[⚠ S1] REVIEW REQUIRED | REGULATIVE | IG Core
+Original: "..."
+Coded (consensus): A,p(...) A(...) D(...) I(...) Bdir(...) Cex(...).
+Flagged fields: [disagreement_fields value] — see review CSV for agent values.
+Notes:    ...
+```
+
 As you encode, also **build the internal data record** for each statement (used in Steps 7–8):
 
 For each statement, track these fields:
@@ -132,6 +190,36 @@ ig_script_full, notes
 ```
 
 Where a component is absent, leave the field empty. Where a component contains multiple values (e.g., multiple Cac), join them with ` | `.
+
+---
+
+### Step 6.5 — Merge Agent Outputs (Multi-Agent Mode only)
+
+If Multi-Agent Mode is ENABLED, run the merge script via Bash:
+
+```python
+import subprocess, sys, os
+
+skill_dir = r"[directory from which you loaded SKILL.md]"
+doc_base  = r"[document path without extension]"
+
+agent_csvs    = [f"{doc_base}_IG_agent{i}.csv" for i in range(1, 4)]
+consensus_csv = f"{doc_base}_IG_coded.csv"
+review_csv    = f"{doc_base}_IG_review.csv"
+
+result = subprocess.run(
+    [sys.executable, os.path.join(skill_dir, "merge.py")]
+    + agent_csvs + [consensus_csv, review_csv],
+    capture_output=True, text=True,
+)
+print(result.stdout)
+if result.returncode != 0:
+    print("merge.py error:", result.stderr)
+```
+
+After the script completes:
+- Load `consensus_csv` as the data source for Steps 7, 8, 9 (use the `review_flag` and `disagreement_fields` columns as needed).
+- Report to the researcher: total statements coded, number flagged for review, and the path to the review CSV.
 
 ---
 
@@ -198,6 +286,10 @@ print(f"Excel written: {output_path} ({len(ROWS_DATA)} statements)")
 
 After writing, confirm the file path to the researcher.
 
+**If Multi-Agent Mode was ENABLED:** The consensus CSV (`[base]_IG_coded.csv`) was already written by Step 6.5. Skip the write scripts above and confirm both paths to the researcher:
+- Consensus CSV: `[base]_IG_coded.csv`
+- Review CSV: `[base]_IG_review.csv`
+
 ---
 
 ### Step 8 — Generate IG Parser .txt Output (if selected)
@@ -237,6 +329,15 @@ Regardless of output format selection, always display a summary table:
 **Constitutive statements:**
 | ID | Original (abbreviated) | E | M | F | P | Cac | Cex | O |
 |----|------------------------|---|---|---|---|-----|-----|---|
+
+**If Multi-Agent Mode was ENABLED:** Prepend `⚠` to the ID of any flagged statement (e.g., `⚠ S10`). Below the tables, add a section:
+
+**Statements requiring human review:**
+| ID | Flagged fields |
+|----|---------------|
+| ⚠ S10 | Cac, Cex |
+
+If no statements were flagged, write: *All statements reached consensus across agents.*
 
 ---
 

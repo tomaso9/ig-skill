@@ -135,7 +135,7 @@ Present as a table with columns: ID | Type | Abbreviated Original Text
 > 7. `[skill_dir]/reference/06-nesting.md`
 > 8. `[document path]` — document to code
 >
-> **Execute Steps 1, 4, 5, 6, 7 from SKILL.md.** Skip Steps 2, 3, 8, 9, 10.
+> **Execute Steps 1, 4, 5, 6, 7 from SKILL.md.** Skip Steps 2, 3, 8, 9, 10. In Step 7, ignore the filename derivation rule and write the CSV to exactly the output path specified above (`[base]_IG_agent[N].csv`).
 >
 > The CSV must have exactly these columns:
 > `id, type, coding_level, original_text, A, A_prop, D, I, Bdir, Bdir_prop, Bind, Bind_prop, Cac, Cex, O, E, E_prop, M, F, P, P_prop, ig_script_full, notes`

@@ -115,7 +115,9 @@ Present as a table with columns: ID | Type | Abbreviated Original Text
 
 2. Identify the skill directory: the directory from which you loaded `SKILL.md`.
 
-3. Dispatch 3 agents in parallel using `superpowers:dispatching-parallel-agents`. Each agent receives this instruction (substitute N = 1, 2, 3 for the run number):
+3. Execute Steps 4 and 5 now, as the orchestrator, independently of the agents. Complete the pre-coding familiarization (Step 4) and statement identification table (Step 5) for the document. Do not encode components — stop after producing the statement ID list (S1, S2, … Sn) and type classifications. Save this list as your **reference statement list**.
+
+4. Dispatch 3 agents in parallel using `superpowers:dispatching-parallel-agents`. Each agent receives this instruction (substitute N = 1, 2, 3 for the run number):
 
 > You are an expert IG 2.0 coder. Apply the ig-code skill to the document below. Do not ask the user any questions — all settings are fixed.
 >
@@ -142,7 +144,7 @@ Present as a table with columns: ID | Type | Abbreviated Original Text
 >
 > Write to the output path and confirm the path and row count when done.
 
-4. Wait for all 3 agents to complete, then proceed to **Step 6.5**.
+5. Wait for all 3 agents to complete, then proceed to **Step 6.5**.
 
 ---
 
@@ -223,6 +225,7 @@ After the script completes:
 - Load `consensus_csv` into the internal data record: read each row and treat it as a coded statement record with the same fields as the single-agent path (`id`, `type`, `coding_level`, `original_text`, `A`, `A_prop`, `D`, `I`, `Bdir`, `Bdir_prop`, `Bind`, `Bind_prop`, `Cac`, `Cex`, `O`, `E`, `E_prop`, `M`, `F`, `P`, `P_prop`, `ig_script_full`, `notes`). This record is then available for Steps 7, 8, and 9 exactly as if single-agent encoding had produced it.
 - Load `consensus_csv` as the data source for Steps 7, 8, 9 (use the `review_flag` and `disagreement_fields` columns as needed).
 - Report to the researcher: total statements coded, number flagged for review, and the path to the review CSV.
+- Cross-check the consensus CSV statement IDs against your reference statement list from Step 6 item 3. If any statement you identified is absent from the consensus CSV (all 3 agents missed it), flag it explicitly: report those IDs to the researcher as "Statements identified by the orchestrator but absent from all agent outputs — require manual coding." Add a `review_flag = TRUE` row for each missing statement to the consensus CSV with all component fields empty and `disagreement_fields = "missing from all agent runs"`.
 - If in-chat markdown was selected, display each statement using the in-chat display format defined in the encoding section below. Use the consensus values from `consensus_csv` for each statement. For any statement where `review_flag = TRUE`, use the `[⚠ Sn] REVIEW REQUIRED` format defined there, including the `disagreement_fields` value on the "Flagged fields" line.
 
 ---

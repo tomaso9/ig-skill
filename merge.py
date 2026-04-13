@@ -65,6 +65,10 @@ def merge_three(paths, consensus_path, review_path):
 
     for sid in all_ids:
         run_rows = [r.get(sid, {}) for r in runs]
+        present = sum(1 for r in runs if sid in r)
+        if present < 2:
+            print(f"WARNING: statement {sid!r} found in only {present} run(s); skipping.", file=sys.stderr)
+            continue
         consensus_row = {"id": sid}
 
         # Passthrough fields: use first non-empty value across runs

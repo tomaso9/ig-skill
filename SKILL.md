@@ -123,6 +123,7 @@ Present as a table with columns: ID | Type | Abbreviated Original Text
 > - Coding level: [Coding Level from Step 2]
 > - Output: CSV file only
 > - Output path: `[base]_IG_agent[N].csv`
+> - Multi-Agent Mode: DISABLED (you are a sub-agent; always use the single-agent encoding path in Step 6)
 >
 > **Read these files in order:**
 > 1. `[skill_dir]/SKILL.md`
@@ -200,8 +201,9 @@ If Multi-Agent Mode is ENABLED, run the merge script via Bash:
 ```python
 import subprocess, sys, os
 
-skill_dir = r"[directory from which you loaded SKILL.md]"
-doc_base  = r"[document path without extension]"
+# Substitute actual values resolved in Step 6 items 1 and 2:
+skill_dir = r"ACTUAL_SKILL_DIR"   # e.g. r"C:\path\to\ig-skill"
+doc_base  = r"ACTUAL_DOC_BASE"    # e.g. r"C:\path\to\document" (no extension)
 
 agent_csvs    = [f"{doc_base}_IG_agent{i}.csv" for i in range(1, 4)]
 consensus_csv = f"{doc_base}_IG_coded.csv"
@@ -220,6 +222,7 @@ if result.returncode != 0:
 After the script completes:
 - Load `consensus_csv` as the data source for Steps 7, 8, 9 (use the `review_flag` and `disagreement_fields` columns as needed).
 - Report to the researcher: total statements coded, number flagged for review, and the path to the review CSV.
+- If in-chat markdown was selected, display each statement using the in-chat display format defined in the encoding section below. Use the consensus values from `consensus_csv` for each statement. For any statement where `review_flag = TRUE`, use the `[⚠ Sn] REVIEW REQUIRED` format defined there, including the `disagreement_fields` value on the "Flagged fields" line.
 
 ---
 

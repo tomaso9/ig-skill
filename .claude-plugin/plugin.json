@@ -1,7 +1,7 @@
 {
   "name": "ig-skill",
   "description": "Claude skill for applying Institutional Grammar 2.0 (IG 2.0) coding to rule documents. Encodes institutional statements from regulations, policies, and statutes using IG Script notation.",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "author": {
     "name": "tomaso9"
   },

@@ -85,11 +85,12 @@ Save the response as **Multi-Agent Mode**: enabled / disabled.
 Scan the document and report:
 
 1. **Document type** — What kind of rule document is this? (regulation, policy, bylaw, statute, etc.)
-2. **Key actors** — Candidates for Attributes (REG) / Constituted Entities (CONST)
-3. **Key actions** — Candidates for Aims (REG) / Constitutive Functions (CONST)
-4. **Apparent statement mix** — Primarily regulative, constitutive, or mixed?
-5. **Definitions section** — If present, note defined terms; these set the decomposition level
-6. **Confirmed settings** — Coding level: [level chosen in Step 2] | Output: [format(s) chosen in Step 3]
+2. **Document zones** — Identify the approximate span of each zone: preamble/recitals (presumptive NON-IS), definitions (presumptive CONST), and policy instructions (presumptive IS). Note any zone boundaries that are unclear or absent.
+3. **Key actors** — Candidates for Attributes (REG) / Constituted Entities (CONST)
+4. **Key actions** — Candidates for Aims (REG) / Constitutive Functions (CONST)
+5. **Apparent statement mix** — Primarily regulative, constitutive, or mixed?
+6. **Definitions section** — If present, note defined terms; these set the decomposition level
+7. **Confirmed settings** — Coding level: [level chosen in Step 2] | Output: [format(s) chosen in Step 3]
 
 ---
 
@@ -98,10 +99,10 @@ Scan the document and report:
 Scan the document and identify all candidate institutional statements. For each:
 
 - Strip extraneous punctuation (bullets, roman numerals, section markers)
-- Reconstruct passive-voice statements into active form, marking inferred actors with `[ ]`
+- Reconstruct passive-voice statements into active form **only when the actor appears explicitly in the same sentence or the immediately adjacent sentence** — mark the reconstructed actor with `[ ]` using its exact name from the text. If the actor is not present in the same or adjacent sentence, do not rewrite the statement; leave `A` empty and add a `notes` entry: *"actor absent from text — manual coding required"*
 - Decompose compound statements (multiple aims, multiple attributes) into separate logically-combined atomic statements
 - Label each with a unique ID: `S1`, `S2`, `S3`, ...
-- Classify each as: **REG** (regulative), **CONST** (constitutive), **HYB** (hybrid), or **NON-IS** (not an institutional statement — retain but do not encode)
+- Classify each as: **REG** (regulative), **CONST** (constitutive), or **NON-IS** (not an institutional statement — retain but do not encode). Do not use HYB — if a statement appears hybrid, assign the type that reflects its **primary institutional function**. Apply the document zone identified in Step 4 item 2 as a prior: statements in the preamble/recital zone are presumptive NON-IS. See `reference/04-heuristics.md` for full NON-IS criteria and REG/CONST decision rules.
 
 Present as a table with columns: ID | Type | Abbreviated Original Text
 
@@ -127,14 +128,12 @@ Present as a table with columns: ID | Type | Abbreviated Original Text
 
    Wait for the researcher's reply. If they provide corrections (additions or removals), update your reference statement list accordingly before proceeding. Do not dispatch agents until the researcher confirms.
 
-5. Dispatch 3 agents in parallel using `superpowers:dispatching-parallel-agents`. Each agent receives this instruction (substitute N = 1, 2, 3 for the run number):
+5. Dispatch 3 agents in parallel using `superpowers:dispatching-parallel-agents`. Each agent receives this instruction (substitute N = 1, 2, 3 for the run number, and paste the confirmed statement list for STATEMENT_LIST):
 
 > You are an expert IG 2.0 coder. Apply the ig-code skill to the document below. Do not ask the user any questions — all settings are fixed.
 >
 > **Fixed settings:**
 > - Coding level: [Coding Level from Step 2]
-> - Output: CSV file only
-> - Output path: `[base]_IG_agent[N].csv`
 > - Multi-Agent Mode: DISABLED (you are a sub-agent; always use the single-agent encoding path in Step 6)
 >
 > **Read these files in order:**
@@ -147,14 +146,53 @@ Present as a table with columns: ID | Type | Abbreviated Original Text
 > 7. `[skill_dir]/reference/06-nesting.md`
 > 8. `[document path]` — document to code
 >
-> **Execute Steps 1, 4, 5, 6, 7 from SKILL.md.** Skip Steps 2, 3, 8, 9, 10. In Step 7, ignore the filename derivation rule and write the CSV to exactly the output path specified above (`[base]_IG_agent[N].csv`).
+> **Pre-confirmed statement list (do not re-identify or re-classify — use these IDs and types exactly):**
 >
-> The CSV must have exactly these columns:
+> STATEMENT_LIST
+>
+> **Execute Steps 1, 4, 6 from SKILL.md only.** Skip Steps 2, 3, 5, 7, 8, 9, 10. For Step 4, do the pre-coding familiarization but do NOT produce a statement list — the list above is authoritative. For Step 6, encode each statement in the list above using its pre-assigned ID and type. Do not add, remove, split, or merge statements, and do not change the type of any statement. Do NOT attempt to use the Write or Bash tools — sub-agents run in a sandboxed context and cannot receive interactive permission prompts.
+>
+> Instead, after completing all encoding, output your coded rows using this exact format at the end of your response:
+>
+> ### AGENT_DATA
+> ```python
+> [
+>     {"id": "S1", "type": "REG", "coding_level": "IG Core", "original_text": "...", "A": "...", "A_prop": "", "D": "...", "I": "...", "Bdir": "...", "Bdir_prop": "", "Bind": "", "Bind_prop": "", "Cac": "", "Cex": "", "O": "", "E": "", "E_prop": "", "M": "", "F": "", "P": "", "P_prop": "", "ig_script_full": "...", "notes": "..."},
+>     ...one dict per statement...
+> ]
+> ```
+>
+> Every dict must have exactly these 23 keys in this order:
 > `id, type, coding_level, original_text, A, A_prop, D, I, Bdir, Bdir_prop, Bind, Bind_prop, Cac, Cex, O, E, E_prop, M, F, P, P_prop, ig_script_full, notes`
 >
-> Write to the output path and confirm the path and row count when done.
+> Leave unused fields as empty strings `""`. Do not omit any key. The orchestrator will extract this block and write the CSV file.
 
-6. Wait for all 3 agents to complete, then proceed to **Step 6.5**.
+6. Wait for all 3 agents to complete.
+
+7. Collect agent data and write CSVs. For each agent N (1, 2, 3):
+   - Locate the `### AGENT_DATA` block in the agent's response.
+   - Use the Write tool to create `[doc_dir]/_write_agentN.py` with this template (substitute the actual list of dicts for `ROWS_DATA` and the actual output path for `OUTPUT_PATH`):
+
+   ```python
+   import csv, re
+   output_path = r"OUTPUT_PATH"
+   fieldnames = ["id","type","coding_level","original_text","A","A_prop","D","I","Bdir","Bdir_prop","Bind","Bind_prop","Cac","Cex","O","E","E_prop","M","F","P","P_prop","ig_script_full","notes"]
+   rows = ROWS_DATA
+   def _id_key(r):
+       m = re.match(r'^([A-Za-z]*)(\d+)(.*)$', r["id"])
+       return (m.group(1), int(m.group(2)), m.group(3)) if m else (r["id"], 0, "")
+   rows = sorted(rows, key=_id_key)
+   with open(output_path, "w", newline="", encoding="utf-8") as f:
+       writer = csv.DictWriter(f, fieldnames=fieldnames)
+       writer.writeheader()
+       writer.writerows(rows)
+   print(f"Written: {output_path} ({len(rows)} rows)")
+   ```
+
+   - Run the script via Bash: `python _write_agentN.py` (from the document directory).
+   - Confirm `[base]_IG_agentN.csv` was written before proceeding.
+
+   After all three CSVs exist, proceed to **Step 6.5**.
 
 ---
 
@@ -249,7 +287,7 @@ Derive the output filename from the input document name: if input is `document.p
 Use this Python script via Bash — replace the DATA placeholder with the actual coded records:
 
 ```python
-import csv, os
+import csv, re
 
 output_path = r"OUTPUT_PATH"
 
@@ -263,6 +301,12 @@ fieldnames = [
 ]
 
 rows = ROWS_DATA  # list of dicts matching fieldnames above
+
+def _id_key(r):
+    m = re.match(r'^([A-Za-z]*)(\d+)(.*)$', r["id"])
+    return (m.group(1), int(m.group(2)), m.group(3)) if m else (r["id"], 0, "")
+
+rows = sorted(rows, key=_id_key)
 
 with open(output_path, "w", newline="", encoding="utf-8") as f:
     writer = csv.DictWriter(f, fieldnames=fieldnames)

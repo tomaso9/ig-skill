@@ -11,9 +11,9 @@ Source: IG 2.0 Codebook v1.4, Section 4.2
 ### General Coding Principles
 
 1. Identify and encode: **Attributes** → **Deontic** → **Aim** → **Object(s)** → **Context** → **Or else**
-2. Where a component is absent but inferable, enclose in `[ ]`
+2. Where a component is absent from the coded sentence, **only use `[ ]` when the value can be sourced from the same sentence, the immediately adjacent sentence, or (with a note) the same paragraph** — see Actor Sourcing Rules in `04-heuristics.md`. Do not infer from broader document context or training knowledge. If the component cannot be sourced within those bounds, leave the field empty and note it.
 3. Attribute properties use `,p` suffix; objects similarly
-4. Context defaults: no Activation Condition → *"under all conditions"*; no Execution Constraint → *"no constraints"*
+4. Context defaults: no Activation Condition → *"under all conditions"*; no Execution Constraint → *"no constraints"*. Do not write these defaults into the fields — leave them empty. Only populate Cac and Cex with text that appears in the source.
 
 ### Component-by-Component Guidelines
 
@@ -21,6 +21,7 @@ Source: IG 2.0 Codebook v1.4, Section 4.2
 - Decompose into actor + actor property where analytically meaningful
 - Use policy definitions to determine decomposition level
 - If a regulation distinguishes between types (e.g., organic vs. non-organic farmers), capture the type as a property
+- **Source constraint:** The actor value must come from the text of the same sentence, the immediately adjacent sentence, or (with a `notes` entry) the same paragraph. Do not supply an actor from elsewhere in the document or from general knowledge. If no actor can be sourced within those bounds, leave `A` empty and add note: *"actor absent from text — manual coding required"*
 
 ```
 A,p(Certified) A(farmer) D(must) I(submit) Bdir(organic system plan) Cex(annually).

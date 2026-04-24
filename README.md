@@ -10,7 +10,7 @@ Based on: *Frantz & Siddiki, IG 2.0 Codebook v1.4 (October 2024)*
 
 Given a rule document, the skill:
 
-1. **Identifies** all institutional statements and classifies each as regulative (REG), constitutive (CONST), hybrid (HYB), or non-institutional (NON-IS)
+1. **Identifies** all institutional statements and classifies each as regulative (REG), constitutive (CONST), or non-institutional (NON-IS)
 2. **Encodes** each statement in IG Script notation at your chosen level of expressiveness
 3. **Produces** structured outputs ready for analysis — in-chat review, spreadsheet, or IG Parser input
 
@@ -119,7 +119,7 @@ Written as `<document_name>_IG_coded.csv` (or `.xlsx`) in the same directory as 
 | Column | Description |
 |--------|-------------|
 | `id` | Statement ID (S1, S2, …) |
-| `type` | REG / CONST / HYB |
+| `type` | REG / CONST |
 | `coding_level` | IG Core / Extended / Logico |
 | `original_text` | Source sentence |
 | `A` | Attributes |

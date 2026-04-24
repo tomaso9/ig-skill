@@ -33,6 +33,7 @@ Optional: **M** (Modal), **P** (Constituting Properties), **O** (Or else).
 - The entity being defined, established, modified, or conferred status upon
 - Can be an actor, role, object, artifact, or the policy itself
 - Properties encoded with `,p` suffix: `E,p(Council) E(Chair)`
+- **Source constraint:** Use the entity name exactly as it appears in the source text. Do not substitute, generalize, or infer the entity from surrounding sections. If the entity is implied but not named, leave `E` empty and add note: *"constituted entity absent from text — manual coding required"*
 
 #### Modal (M)
 - Signals epistemic necessity or possibility of the constitution (not behavioral duty)

@@ -10,8 +10,18 @@ Usage:
 """
 
 import csv
+import re
 import sys
 from collections import Counter
+
+
+def _id_sort_key(sid):
+    """Natural sort key for statement IDs like S1, S2, S10, S10a.
+    Splits into (prefix, number, suffix) so S2 < S10 < S10a."""
+    m = re.match(r'^([A-Za-z]*)(\d+)(.*)$', sid)
+    if m:
+        return (m.group(1), int(m.group(2)), m.group(3))
+    return (sid, 0, '')
 
 
 FIELDNAMES = [
@@ -58,7 +68,7 @@ def merge_three(paths, consensus_path, review_path):
     review_path:    one row per (statement, field) pair that disagreed
     """
     runs = [load_csv(p) for p in paths]
-    all_ids = sorted(set().union(*[r.keys() for r in runs]))
+    all_ids = sorted(set().union(*[r.keys() for r in runs]), key=_id_sort_key)
 
     consensus_rows = []
     review_rows = []

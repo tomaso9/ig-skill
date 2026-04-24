@@ -27,22 +27,28 @@ Source: IG 2.0 Codebook v1.4, Sections 2.5, 3
 
 ### Passive-to-Active Conversion (IG Core recommended)
 
-Convert passive statements to active form to make the Attributes explicit:
+Convert passive statements to active form **only when the actor appears explicitly in the source text within a defined proximity window** (see Actor Sourcing Rules below). Mark the reconstructed actor with `[ ]` using its exact name as it appears in the text — do not paraphrase, generalize, or substitute.
+
 - Original: *"Notifications of compliance must be sent to farmers within 30 days of facility inspections."*
-- Active: *"[Certifier] must send farmers notifications of compliance within 30 days of facility inspections."*
-- Note: mark inferred actor with `[ ]`
+- Active (actor named in same paragraph): *"[Certifier] must send farmers notifications of compliance within 30 days of facility inspections."*
 
-### Inferred Actor Labels (project convention)
+Do **not** infer an actor from document-wide knowledge, general regulatory patterns, or training knowledge. If the actor cannot be identified from the proximity window, do not reconstruct the passive form.
 
-When the responsible actor must be inferred, use brackets `[ ]` and apply the following standard labels:
+### Actor Sourcing Rules
 
-| Situation | Standard label | Example |
-|-----------|---------------|---------|
-| Impersonal prohibition ("X is prohibited") | `[any person]` | `[any person] D([shall not]) I(discharge)...` |
-| Passive obligation where actor is clear from section context | `[actor inferred from context, e.g., applicant]` | `[applicant] D(shall) I(forward)...` |
-| Actor entirely unresolvable from text or context | `[actor]` | `[actor] D(must) I(report)...` |
+These rules determine when `[ ]` may be used and what goes in it. Apply them in order — use the first rule that matches.
 
-**Hint (codebook p. 65):** When a statement contains an aim linked to an object as a noun (passive construction), this signals a missing or implied actor. Check prepositional clauses such as "by [actor]" for clues. If found, that actor is the Attribute; if not, infer from institutional context and mark with `[ ]`.
+| Priority | Situation | Action |
+|----------|-----------|--------|
+| 1 | Actor named explicitly in the **same sentence** (passive construction with "by [actor]" or equivalent) | Convert to active; use `[ ]` with actor's exact name from text |
+| 2 | Actor named explicitly in the **immediately preceding or following sentence** | Convert to active; use `[ ]` with actor's exact name from text |
+| 3 | Actor named explicitly **elsewhere in the same paragraph** | Use `[ ]` with actor's exact name; add note: *"actor inferred from paragraph [N]"* |
+| 4 | Statement is an **impersonal prohibition** ("X is prohibited", "no person shall") with no specific actor in the text | Use `[any person]`; this encodes the semantic universal of the prohibition, not a factual inference |
+| 5 | Actor not present within the same paragraph | Leave `A` **empty**; add note: *"actor absent from text — manual coding required"* |
+
+**Never use `[actor]`, `[actor inferred from context]`, or any fabricated label.** Only exact names from the source text are permitted inside `[ ]`, except for `[any person]` in case 4.
+
+**Hint (codebook p. 65):** When a statement contains an aim linked to an object as a noun (passive construction), this signals a missing or implied actor. Check prepositional clauses such as "by [actor]" for clues. If found, that actor is the Attribute; if not found within the same paragraph, leave `A` empty.
 
 ### Statement Decomposition (Pre-processing for IG Core)
 
@@ -53,7 +59,59 @@ Statements with multiple Aims should be decomposed into separate statements:
 
 ---
 
-## Heuristics for Identifying Statement Types
+## Non-Institutional Statements (NON-IS)
+
+### Step 1: Apply the normative force test first
+
+Meeting the minimum syntactic criteria (A + I for regulative; E + F for constitutive) is necessary but **not sufficient** for IS classification. A statement must also carry **normative force**:
+
+- **Prescriptive/permissive/prohibitive force** — the statement establishes a duty, permission, or prohibition on an actor's future or ongoing behavior (regulative)
+- **Constitutive force** — the statement establishes, modifies, or defines an institutional element — an actor, role, right, object, or rule (constitutive)
+
+A statement that only asserts a fact, records a completed event, or describes a state of affairs carries **neither** kind of normative force and is **NON-IS**, regardless of whether it contains an actor and a verb.
+
+> *"NYCDEP has submitted the proposed Watershed Regulations to NYSDOH."*
+> → Has A + I + Bdir, but carries no forward-looking normative force. **NON-IS.**
+
+> *"NYSDOH has issued a SEQR Findings Statement."*
+> → Records a completed administrative act. **NON-IS.**
+
+### Step 2: Apply the document zone prior
+
+Rule documents typically have three zones with different base rates of IS:
+
+| Zone | Content | Default presumption |
+|------|---------|-------------------|
+| **Preamble / recitals** | "Whereas" clauses, findings, contextual background, statements of purpose | **Presumptive NON-IS** — treat as NON-IS unless normative force can be demonstrated |
+| **Definitions** | Defined terms for use throughout the document | Presumptive **CONST** |
+| **Policy instructions** | The core operative rules, organized by sections and subsections | Presumptive **IS** |
+
+Identify each zone during Step 4 pre-coding familiarization. When a candidate statement falls in the preamble/recital zone, apply heightened scrutiny before classifying it as IS.
+
+### Recognizable NON-IS patterns
+
+| Pattern | Signal | Example |
+|---------|--------|---------|
+| **Perfective past** | *"has [verb]ed"*, *"was [verb]ed"* — completed event | *"NYCDEP has submitted X to NYSDOH"* |
+| **State-of-affairs declaration** | Bare factual assertion, no normative operator | *"The Watershed is located in..."* |
+| **Recital / whereas clause** | *"Whereas..."*, *"The Parties acknowledge that..."* | Preamble text establishing shared factual basis |
+| **Findings statement** | Records a determination already made | *"NYSDOH has issued a SEQR Findings Statement"* |
+| **Bare cross-reference** | Points to content defined elsewhere; no rule of its own | *"as set forth in Attachment W"* (standalone sentence) |
+| **Heading or label** | Section title, article header, organizational marker | *"Article III — Watershed Regulations"* |
+| **Explanatory parenthetical** | Clarifies a term or abbreviation inline, without establishing a rule | *"(hereinafter 'the City')"* as a standalone sentence |
+
+**Caution — perfective past in policy sections:** Some policy sections use perfective past to establish legal conditions precedent ("The City has registered contracts and paid first payments") — these may carry constitutive or regulative force. Apply the normative force test before defaulting to NON-IS.
+
+### How to encode NON-IS rows
+
+- Set `type` = `NON-IS`
+- Populate `original_text` with the source sentence
+- Leave **all IG component fields empty** (`A`, `D`, `I`, `Bdir`, `Bdir_prop`, `Bind`, `Bind_prop`, `Cac`, `Cex`, `O`, `E`, `E_prop`, `M`, `F`, `P`, `P_prop`, `ig_script_full`)
+- Add a `notes` entry naming the pattern: e.g., *"perfective past — records completed submission; no prescriptive force"*
+
+---
+
+## Heuristics for Identifying Statement Types (REG vs. CONST)
 
 ### General Heuristics
 
@@ -61,7 +119,7 @@ Statements with multiple Aims should be decomposed into separate statements:
 |----------|----------|
 | Does the statement introduce, parameterize, or modify fundamental aspects of the action situation (actor definitions, rights, roles, object definitions, affordances)? | **Constitutive** |
 | Does the statement signal unambiguous agency and specify duty, discretion, or sanctions for transgression linked to an actor? | **Regulative** |
-| Both criteria are satisfied? | → Test for **Hybrid** (see below) |
+| Both criteria are satisfied? | → Assign the type that matches the statement's **primary institutional function** (see below) |
 
 ### Specific Heuristics (Table 4)
 
@@ -86,37 +144,38 @@ When a statement is ambiguous between regulative and constitutive:
 
 ---
 
-## Hybrid & Polymorphic Statements
+## Statements with Both Regulative and Constitutive Features
 
-### Regulative-Constitutive Hybrid (REG-CONST)
-A **regulative statement** that embeds a constitutive sub-statement (e.g., introduces a new entity in the Object component).
+Some statements serve both regulative and constitutive functions simultaneously. HYB is **not a valid type** — every statement must be resolved to either REG or CONST based on its primary institutional function.
+
+### Decision rule: primary function
+
+Ask: *What would be lost if this statement were removed from the document?*
+
+- If the answer is **a behavioral constraint or permission on an actor** → **REG**
+- If the answer is **a definition, role, right, status, or systemic structure** → **CONST**
+
+### Regulative statement with embedded constitutive content
+
+A regulative statement may introduce or reference an entity in its object component. Encode the overall statement as **REG**; the constitutive element is captured via nesting in Bdir or Bind:
 
 ```
 A(Certifier) D(must) I(revoke) Bdir{E(certification) M(shall) [NOT] F(be valid)
 P(for non-compliant operations)}.
 ```
 
-The overall statement is **regulative** (primary purpose: regulate behavior), with a constitutive element nested in the object.
+### Constitutive statement with an Or-else clause
 
-### Constitutive-Regulative Hybrid (CONST-REG)
-A **constitutive statement** whose Or else clause is a regulative statement.
+A constitutive statement may carry a regulative Or-else clause. Encode the overall statement as **CONST**; the regulative enforcement is captured in O:
 
 ```
 E(Board) M(shall) F(consist of) P(seven members), O{A(Appointing Authority) D(must)
 I(fill) Bdir(vacancies) Cex(within 30 days)}.
 ```
 
-### Polymorphic Statements
-Statements that can be legitimately encoded in **both** regulative and constitutive forms (e.g., rights statements that can be read as actor obligation or entity parameterization). Encode both:
+### Polymorphic statements
 
-```
-// Constitutive encoding:
-E(Members) of the E,p(Council) M(shall) F(have the right) P(to hold any public office).
-
-// Regulative encoding (via jural correlatives):
-A([Authority]) D([must]) [NOT] I(disqualify) Bdir(member of the Council)
-Cex(from holding any public office).
-```
+Some statements can be legitimately read as either REG or CONST (e.g., rights statements). Choose the encoding that best reflects the statement's function in this document. Record the alternative reading in the `notes` field. Do not produce two rows.
 
 ---
 

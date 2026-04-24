@@ -52,10 +52,19 @@ Properties of properties (second-order): `A,p1,p1(...)`.
 
 ## Implied Components
 
-When a component is absent from the text but can be inferred from context, wrap it in square brackets:
+Square brackets `[ ]` mark components whose value was not explicitly stated in the coded sentence but was sourced from a strictly defined proximity window in the text. **They do not permit free inference or invention.**
 
-- `A([certifier])` — actor inferred from context
-- `I([sends])` — action nominalized in the original text, reconstructed
+**Allowed uses of `[ ]`:**
+- `A([NYSDOH])` — actor named in the same sentence (passive construction) or same/adjacent sentence; use exact name from text
+- `A([any person])` — impersonal prohibition only ("X is prohibited", "no person shall")
+- `I([sends])` — action nominalized in the original text and mechanically reconstructed (e.g., "submission of X" → "[submits] X")
+
+**Not allowed:**
+- Actors inferred from document-wide knowledge or training patterns
+- Actors sourced from a different paragraph without a note
+- Fabricated labels such as `[actor]`, `[the agency]`, `[responsible party]`
+
+If a necessary component cannot be filled from the allowed sources, leave the field **empty** and add a note: *"[component] absent from text — manual coding required"*.
 
 ---
 

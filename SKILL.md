@@ -76,22 +76,22 @@ Save `headers` and `data_rows` as **Excel input state** — `headers` is the lis
 
    *"Which column contains the statement text?"*
 
-   List the column names from `headers` (saved in Step 1) as options.
+   List the column names from `headers` (saved in Step 1) as a bulleted list of options.
 
 2. Use AskUserQuestion to ask:
 
    *"Which column contains the statement IDs?"*
 
-   List the column names from `headers` as options.
+   List the column names from `headers` as a bulleted list of options.
 
-3. Read all rows from `data_rows` (saved in Step 1). For each row, extract the ID value and text value from the two selected columns.
+3. Read all rows from `data_rows` (saved in Step 1). For each row, extract the ID value and text value from the two selected columns. Each row is treated as a pre-delineated atomic statement — do not decompose or split rows.
 
-4. Classify each statement as **REG**, **CONST**, or **NON-IS** using the same heuristics as Step 5 (see `reference/04-heuristics.md`).
+4. Classify each statement as **REG**, **CONST**, or **NON-IS** using the normative-force and syntactic heuristics from `reference/04-heuristics.md`. Note: the document zone prior (Step 4 item 2) cannot be applied here because Steps 4 and 5 are skipped for xlsx input — rely on the statement text alone.
 
 5. Present the classification table to the researcher:
 
-   | ID | Type | Abbreviated Text |
-   |----|------|-----------------|
+   | ID | Type | Abbreviated Original Text |
+   |----|------|--------------------------|
 
    Then ask:
 
@@ -174,7 +174,9 @@ Present as a table with columns: ID | Type | Abbreviated Original Text
 
 2. Identify the skill directory: the directory from which you loaded `SKILL.md`.
 
-3. Execute Steps 4 and 5 now, as the orchestrator, independently of the agents. Complete the pre-coding familiarization (Step 4) and statement identification table (Step 5) for the document. Do not encode components — stop after producing the statement ID list (S1, S2, … Sn) and type classifications. Save this list as your **reference statement list**.
+3. **If input was `.xlsx`:** The authoritative statement list was already established in Step 1.5. Use it directly as the **reference statement list** and skip to item 4 to present it to the researcher for dispatch confirmation. Do not re-run Steps 4 or 5.
+
+   **Otherwise:** Execute Steps 4 and 5 now, as the orchestrator, independently of the agents. Complete the pre-coding familiarization (Step 4) and statement identification table (Step 5) for the document. Do not encode components — stop after producing the statement ID list (S1, S2, … Sn) and type classifications. Save this list as your **reference statement list**.
 
 4. Use AskUserQuestion to present the statement list to the researcher and ask for confirmation before dispatching:
 

@@ -84,7 +84,24 @@ Save `headers` and `data_rows` as **Excel input state** — `headers` is the lis
 
    List the column names from `headers` as a bulleted list of options.
 
-3. Read all rows from `data_rows` (saved in Step 1). For each row, extract the ID value and text value from the two selected columns. Each row is treated as a pre-delineated atomic statement — do not decompose or split rows.
+3. Run this via Bash to extract all rows using the column names the researcher selected in sub-steps 1 and 2 (substitute the researcher's exact column names for `TEXT_COLUMN` and `ID_COLUMN`):
+
+```python
+import openpyxl
+wb = openpyxl.load_workbook(r"$ARGUMENTS")
+ws = wb.active
+all_rows = list(ws.iter_rows(values_only=True))
+headers = list(all_rows[0])
+text_idx = headers.index("TEXT_COLUMN")
+id_idx = headers.index("ID_COLUMN")
+statements = [{"id": str(row[id_idx]), "text": str(row[text_idx])} for row in all_rows[1:] if row[id_idx] is not None]
+for s in statements:
+    print(f"  {s['id']}: {s['text'][:80]}")
+print(f"\nTotal: {len(statements)} statements")
+wb.close()
+```
+
+Save the resulting list of `{"id": ..., "text": ...}` dicts as the **statement data**. Each entry is a pre-delineated atomic statement — do not decompose or split rows.
 
 4. Classify each statement as **REG**, **CONST**, or **NON-IS** using the normative-force and syntactic heuristics from `reference/04-heuristics.md`. Note: the document zone prior (Step 4 item 2) cannot be applied here because Steps 4 and 5 are skipped for xlsx input — rely on the statement text alone.
 
@@ -186,7 +203,7 @@ Present as a table with columns: ID | Type | Abbreviated Original Text
 
    "Here is the statement list I identified for this document:
 
-   [paste the Step 5 statement ID table here]
+   [For xlsx input: paste the Step 1.5 confirmed classification table here. For all other input: paste the Step 5 statement ID table here.]
 
    Does this look complete? If any statements are missing or should be removed, let me know now. Otherwise reply 'yes' to proceed with agent dispatch."
 
@@ -214,7 +231,11 @@ Present as a table with columns: ID | Type | Abbreviated Original Text
 >
 > STATEMENT_LIST
 >
-> **Execute Steps 1, 4, 6 from SKILL.md only.** Skip Steps 2, 3, 5, 7, 8, 9, 10. For Step 4, do the pre-coding familiarization but do NOT produce a statement list — the list above is authoritative. For Step 6, encode each statement in the list above using its pre-assigned ID and type. Do not add, remove, split, or merge statements, and do not change the type of any statement. Do NOT attempt to use the Write or Bash tools — sub-agents run in a sandboxed context and cannot receive interactive permission prompts.
+> **If the input file (`[document path]`) is an `.xlsx` file:** Skip Steps 1 and 4 entirely — the STATEMENT_LIST above is the authoritative source. Proceed directly to Step 6 encoding.
+>
+> **Otherwise:** Execute Steps 1, 4, 6 from SKILL.md only. Skip Steps 2, 3, 5, 7, 8, 9, 10. For Step 4, do the pre-coding familiarization but do NOT produce a statement list — the list above is authoritative. For Step 6, encode each statement in the list above using its pre-assigned ID and type.
+>
+> Do not add, remove, split, or merge statements, and do not change the type of any statement. Do NOT attempt to use the Write or Bash tools — sub-agents run in a sandboxed context and cannot receive interactive permission prompts.
 >
 > Instead, after completing all encoding, output your coded rows using this exact format at the end of your response:
 >

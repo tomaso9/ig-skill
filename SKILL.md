@@ -1,6 +1,6 @@
 ---
 name: ig-code
-description: Apply Institutional Grammar 2.0 (IG 2.0) coding to a rule document. Use when the user wants to parse, encode, or analyze institutional statements (rules, regulations, policies) using the ADICO/IG syntax. Accepts .txt, .docx, or .pdf file paths.
+description: Apply Institutional Grammar 2.0 (IG 2.0) coding to a rule document. Use when the user wants to parse, encode, or analyze institutional statements (rules, regulations, policies) using the ADICO/IG syntax. Accepts .txt, .docx, .pdf, or .xlsx file paths. For .xlsx input, each row must be a pre-identified institutional statement.
 argument-hint: "<path-to-document>"
 allowed-tools: Read Bash Glob Write AskUserQuestion
 user-invocable: true
@@ -40,6 +40,28 @@ from docx import Document
 doc = Document(r"$ARGUMENTS")
 print("\n".join(p.text for p in doc.paragraphs))
 ```
+
+**If the file is `.xlsx`:**
+
+First, display this message to the user:
+
+> **Note:** For Excel input, your file must include at least two columns: one containing the statement text, and one containing a unique ID for each statement (e.g., S1, S2…). If your file doesn't have these yet, please add them before proceeding.
+
+Then run via Bash:
+```python
+import subprocess, sys
+subprocess.run([sys.executable, "-m", "pip", "install", "openpyxl", "--quiet"])
+import openpyxl
+wb = openpyxl.load_workbook(r"$ARGUMENTS")
+ws = wb.active
+headers = [cell.value for cell in next(ws.iter_rows(min_row=1, max_row=1))]
+print("Columns:", headers)
+print("\nFirst 3 rows:")
+for row in ws.iter_rows(min_row=2, max_row=4, values_only=True):
+    print(row)
+```
+
+Save the column names and all row data as **Excel input state**. Proceed to **Step 1.5** before continuing to Step 2.
 
 **If the file is `.doc`:** Tell the user this format requires conversion and ask them to save as `.docx` or `.txt` first. Do not proceed.
 

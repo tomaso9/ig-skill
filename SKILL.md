@@ -54,14 +54,17 @@ subprocess.run([sys.executable, "-m", "pip", "install", "openpyxl", "--quiet"])
 import openpyxl
 wb = openpyxl.load_workbook(r"$ARGUMENTS")
 ws = wb.active
-headers = [cell.value for cell in next(ws.iter_rows(min_row=1, max_row=1))]
+all_rows = list(ws.iter_rows(values_only=True))
+headers = list(all_rows[0])
+data_rows = all_rows[1:]
 print("Columns:", headers)
-print("\nFirst 3 rows:")
-for row in ws.iter_rows(min_row=2, max_row=4, values_only=True):
+print(f"\nFirst 3 rows (of {len(data_rows)} total):")
+for row in data_rows[:3]:
     print(row)
+wb.close()
 ```
 
-Save the column names and all row data as **Excel input state**. Proceed to **Step 1.5** before continuing to Step 2.
+Save `headers` and `data_rows` as **Excel input state** — `headers` is the list of column names, `data_rows` is the full list of data rows. Proceed to **Step 1.5** to select columns and classify statements.
 
 **If the file is `.doc`:** Tell the user this format requires conversion and ask them to save as `.docx` or `.txt` first. Do not proceed.
 

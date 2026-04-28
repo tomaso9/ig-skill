@@ -140,6 +140,8 @@ Save the response as **Multi-Agent Mode**: enabled / disabled.
 
 ### Step 4 — Pre-Coding Familiarization
 
+*(Skip this step if input was `.xlsx` — document familiarization is not applicable to pre-identified statement lists. Statement list already confirmed in Step 1.5.)*
+
 Scan the document and report:
 
 1. **Document type** — What kind of rule document is this? (regulation, policy, bylaw, statute, etc.)
@@ -153,6 +155,8 @@ Scan the document and report:
 ---
 
 ### Step 5 — Identify & Delineate Institutional Statements
+
+*(Skip this step if input was `.xlsx` — statement list already confirmed in Step 1.5.)*
 
 Scan the document and identify all candidate institutional statements. For each:
 

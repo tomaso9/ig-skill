@@ -8,9 +8,9 @@ Based on: *Frantz & Siddiki, IG 2.0 Codebook v1.4 (October 2024)*
 
 ## What It Does
 
-Given a rule document, the skill:
+Given a rule document (or a pre-identified statement list), the skill:
 
-1. **Identifies** all institutional statements and classifies each as regulative (REG), constitutive (CONST), or non-institutional (NON-IS)
+1. **Identifies** all institutional statements and classifies each as regulative (REG), constitutive (CONST), or non-institutional (NON-IS) — or accepts a pre-identified list from an `.xlsx` file
 2. **Encodes** each statement in IG Script notation at your chosen level of expressiveness
 3. **Produces** structured outputs ready for analysis — in-chat review, spreadsheet, or IG Parser input
 
@@ -39,7 +39,10 @@ Or copy the `ig-skill/` folder to your project's `.claude/skills/` directory:
 /ig-code regulations.txt
 /ig-code policy.pdf
 /ig-code statute.docx
+/ig-code statements.xlsx
 ```
+
+**For `.xlsx` input:** Each row must be a pre-identified institutional statement. The file must include at least two columns — one for the statement text and one for a unique statement ID (e.g., S1, S2…). The skill skips document familiarization and statement identification and goes straight to coding, using the rows as the confirmed statement list.
 
 The skill asks three questions before coding begins:
 

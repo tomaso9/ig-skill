@@ -70,6 +70,39 @@ Save `headers` and `data_rows` as **Excel input state** — `headers` is the lis
 
 ---
 
+### Step 1.5 — Excel Column Selection & Statement Classification *(xlsx input only — skip for all other input types)*
+
+1. Use AskUserQuestion to ask:
+
+   *"Which column contains the statement text?"*
+
+   List the column names from `headers` (saved in Step 1) as options.
+
+2. Use AskUserQuestion to ask:
+
+   *"Which column contains the statement IDs?"*
+
+   List the column names from `headers` as options.
+
+3. Read all rows from `data_rows` (saved in Step 1). For each row, extract the ID value and text value from the two selected columns.
+
+4. Classify each statement as **REG**, **CONST**, or **NON-IS** using the same heuristics as Step 5 (see `reference/04-heuristics.md`).
+
+5. Present the classification table to the researcher:
+
+   | ID | Type | Abbreviated Text |
+   |----|------|-----------------|
+
+   Then ask:
+
+   *"Does this classification look correct? If any statements should be reclassified, let me know now. Otherwise reply 'yes' to proceed."*
+
+6. Wait for the researcher's confirmation. Apply any requested reclassifications. Save the confirmed list as the **authoritative statement list** — this replaces the output of Step 5 for all downstream steps.
+
+Continue to Step 2.
+
+---
+
 ### Step 2 — Ask the Researcher: Coding Level
 
 Use AskUserQuestion to ask:

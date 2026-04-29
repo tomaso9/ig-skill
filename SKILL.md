@@ -209,7 +209,12 @@ Present as a table with columns: ID | Type | Abbreviated Original Text
 
    Wait for the researcher's reply. If they provide corrections (additions or removals), update your reference statement list accordingly before proceeding. Do not dispatch agents until the researcher confirms.
 
-5. Dispatch 3 agents in parallel using `superpowers:dispatching-parallel-agents`. Each agent receives this instruction (substitute N = 1, 2, 3 for the run number, and paste the confirmed statement list for STATEMENT_LIST):
+5. **Document size check before dispatch.** Count the number of statements in the confirmed reference list.
+
+   - **≤ 40 statements:** Dispatch all statements in a single batch (proceed as described below).
+   - **> 40 statements:** Split the reference list into consecutive batches of up to 40 statements (e.g., S01–S40, S41–S80, …). For each batch: dispatch 3 agents (items 5–6 below), collect their AGENT_DATA blocks, write the three per-batch agent CSVs, then proceed to the next batch. Do not hold more than one batch's AGENT_DATA blocks in context simultaneously. After all batches are written, run merge.py once across all per-batch agent CSVs (appending batch suffixes, e.g. `_batch1_agent1.csv`, `_batch2_agent1.csv`, … → merge together per agent, then run inter-agent merge).
+
+   Dispatch 3 agents in parallel using `superpowers:dispatching-parallel-agents`. Each agent receives this instruction (substitute N = 1, 2, 3 for the run number, and paste the confirmed statement list for STATEMENT_LIST):
 
 > You are an expert IG 2.0 coder. Apply the ig-code skill to the document below. Do not ask the user any questions — all settings are fixed.
 >
@@ -251,6 +256,8 @@ Present as a table with columns: ID | Type | Abbreviated Original Text
 > `id, type, coding_level, original_text, A, A_prop, D, I, Bdir, Bdir_prop, Bind, Bind_prop, Cac, Cex, O, E, E_prop, M, F, P, P_prop, ig_script_full, notes`
 >
 > Leave unused fields as empty strings `""`. Do not omit any key. The orchestrator will extract this block and write the CSV file.
+>
+> **Output size discipline:** Keep field values concise — use the shortest text that faithfully represents the coded value. Do not reproduce the full original text inside `ig_script_full` if it is longer than the IG Script encoding itself; the `original_text` field already captures it. Keep `notes` to one sentence per statement. This keeps the AGENT_DATA block small enough for the orchestrator to process without context overflow.
 
 6. Wait for all 3 agents to complete.
 

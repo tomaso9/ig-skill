@@ -14,6 +14,31 @@ Key signals:
 - Establishes or modifies rules about the institutional setting itself
 - Consequence of violation is **existential** (invalidates policy, dissolves entity) rather than a behavioral sanction
 
+### Definitional Statements: CONST vs. NON-IS
+
+Not all sentences containing "means," "is," or "consists of" are constitutive. Apply the load-bearing test before coding:
+
+**CONST (institutionally binding definition):** The definition creates a legal interpretive rule that obliges all parties to treat X as Y throughout the document. Removing it would force other statements to be rewritten or reinterpreted.
+
+- *"'Secretary' means the Secretary of Agriculture"* → CONST: every subsequent use of "Secretary" depends on it
+- *"'Organic operation' means a farm or handling operation that produces or handles organic products"* → CONST: all obligations applying to organic operations derive from this definition
+
+**NON-IS (merely descriptive):** The sentence explains what something is in real-world terms but imposes no interpretive obligation and would not affect any other statement if removed.
+
+- *"The watershed area contains several reservoirs"* → NON-IS: factual description
+- *"Skaneateles Lake is located in Onondaga and Cayuga Counties"* → NON-IS: factual geography
+- *"The City has been managing these lands since 1894"* → NON-IS: historical background
+
+**Decision tests:**
+
+> *Test 1 — Load-bearing:* Would removing this statement force any other statement to be rewritten or reinterpreted? YES → CONST. NO → NON-IS.
+>
+> *Test 2 — Legal term-of-art form:* Does the statement use an explicit definitional verb (*means*, *is defined as*, *shall mean*, *refers to*, *includes* [enumerating subtypes]) in a **definitions section** or near the opening of a rule? YES → CONST. Descriptive copula (*is*, *are*) in a **preamble or recital** → NON-IS unless it introduces or modifies an institutional role.
+>
+> *Test 3 — Document zone:* Definitions sections → presumptive CONST. Preambles/recitals → presumptive NON-IS. Apply heightened scrutiny before departing from the zone prior.
+
+**Border case — constitutive descriptions in policy sections:** A sentence like *"The Board consists of seven members"* (in a governance article, not a preamble) is CONST because it establishes a structural property of the Board that other rules depend on. The descriptive form does not make it NON-IS when it appears in a constitutive zone.
+
 ---
 
 ## IG Core — Constitutive Statements

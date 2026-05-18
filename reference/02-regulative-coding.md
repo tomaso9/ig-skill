@@ -132,9 +132,10 @@ When a statement contains **multiple values for the same component**, decompose 
 ### Additional Features
 
 1. **Property Hierarchy Decomposition**: Attributes, Objects, and their properties are decomposed into hierarchical relationships with numeric indices (`A,p1`, `A,p2`, `Bdir,p1,p1`)
-2. **Component-level Nesting**: Components can be substituted with entire institutional statements (expressed in braces `{ }` on the component)
-3. **Richer Context Categorization**: Context annotated by circumstantial type (temporal, spatial, procedural) per the Context Taxonomy
-4. **Decomposition of Embedded Actions**: Nominalized actions (conceptual reification) are reconstructed as full institutional statements
+2. **Component-level Nesting**: Components can be substituted with entire institutional statements (expressed in braces `{ }` on the component). When `Cac` contains an institutional state or event structure, default to component-level nesting (`Cac{...}`) rather than encoding it as flat text.
+3. **Context Taxonomy Annotation (required)**: Every `Cac` and `Cex` with explicit content must carry a `[ctx=TYPE]` annotation. See `07-context-taxonomy.md` for the full taxonomy and decision guide. Example: `Cac[ctx=event](upon receipt of application)`, `Cex[ctx=temporal](within 30 days)`.
+4. **Coding sequence**: Begin with the Aim (`I`) or Constitutive Function (`F`), then Attributes/Entity, then context components. This order minimises anchor effects on structural decisions.
+5. **Decomposition of Embedded Actions**: Nominalized actions (conceptual reification) are reconstructed as full institutional statements
 
 ### Component-Level Nesting Example
 
@@ -157,10 +158,10 @@ Original: *"When an inspection reveals noncompliance, a notification shall be se
 ### Annotation Syntax
 
 ```
-A[type=animate; role=originator](Program Manager)
-D[stringency=prescription](must)
-I[act=administer; regfunc=sanction](impose)
-Bdir1,p[prop=quals](monetary) Bdir1[object=sanction](fine)
+A[anim=animate; role=originator](Program Manager)
+D(must)
+I[regfunc=sanction](impose)
+Bdir,p(monetary) Bdir[anim=inanimate; metatype=concrete](fine)
 ```
 
 Statement-level annotation (precedes statement scope):
@@ -170,13 +171,19 @@ Statement-level annotation (precedes statement scope):
 
 ### Regulative Functions (regfunc annotation)
 
-Common regulative functions to annotate on Aim:
-- `detect violation` — reveal, identify, observe non-compliance
-- `sanction` — fine, suspend, revoke, penalize
-- `comply` — adhere, follow, conform
-- `monitor` — inspect, audit, review
-- `report` — notify, inform, submit
-- `authorize` — certify, accredit, approve
+Annotate the Aim (`I`) with the `regfunc` taxonomy. See `08-logico-annotations.md` for the full decision guide.
+
+| Value | Description | Example verbs |
+|-------|-------------|---------------|
+| `comply` | Actor conforming to an institutional expectation | adhere, follow, submit, report |
+| `violate` | Actor departing from an institutional expectation | refuse, fail to submit, operate non-compliantly |
+| `detect compliance` | Detecting/verifying that an actor conforms | inspect, audit, verify, review |
+| `detect violation` | Detecting/verifying that an actor has violated | reveal noncompliance, identify violation |
+| `reward` | Positive incentive issued in response to compliance | certify, accredit, authorize, approve, grant |
+| `sanction` | Negative consequence issued in response to violation | suspend, revoke, fine, penalize, impose |
+| `accept` | Actor accepting the outcome of an enforcement action | comply with suspension, accept penalty |
+| `reject` | Actor challenging an enforcement outcome | contest, dispute, object to |
+| `appeal` | Formal challenge to an enforcement outcome | appeal, request review, petition |
 
 ---
 
@@ -195,5 +202,5 @@ Cex(within thirty days of inspection).
 ```
 A,p1(Organic) A(certifier) D(must) I(send)
 Bind[anim=animate](farmer) Bdir,p(of compliance) Bdir[anim=inanimate](notification)
-Cex[type=temporal](within thirty days) Cex[type=event](of inspection).
+Cex[ctx=temporal](within thirty days) Cex[ctx=event](of inspection).
 ```

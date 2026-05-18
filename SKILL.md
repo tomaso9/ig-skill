@@ -153,6 +153,29 @@ After recording the researcher's format preference, ask:
 
 Save the response as **Multi-Agent Mode**: enabled / disabled.
 
+**If Coding Level is IG Extended or IG Logico**, also ask:
+
+**Question 4:** "Would you like to compute **institutional complexity metrics** after coding? Metrics are derived from the logical operators in each encoded statement and are written to a separate `_IG_metrics.csv` file.
+- **Yes** — proceed to select metrics
+- **No** — skip"
+
+If the researcher answers **Yes**, ask:
+
+**Question 4a:** "Which metrics would you like to compute? (Select all that apply)
+
+*Basic:*
+- [ ] Tree Depth — nesting depth of the encoded statement (1 = flat)
+- [ ] ISC — Institutional State Complexity (Eq. 8.1): product of operator variability across nesting levels
+- [ ] ISR — Institutional State Regimentation (Eq. 8.2): product of regimentation weight across levels
+
+*Component-level (Table 8.7):*
+- [ ] Conditions Variability + Option Count — variability introduced by Cac operators (level 0)
+- [ ] Discretion Extent + Option Count — variability introduced by Aim operators (level 0)
+- [ ] Activity State Variability + Count — variability from nested Cac (level ≥ 1)
+- [ ] Application Variability + Option Count — variability from Bdir/Bind operators (level 0)"
+
+Save as **Compute Metrics**: enabled / disabled and **Selected Metrics**: comma-separated keys from `{depth, isc, isr, conditions, discretion, activity_state, application}` matching the researcher's selections.
+
 ---
 
 ### Step 4 — Pre-Coding Familiarization
@@ -230,7 +253,9 @@ Present as a table with columns: ID | Type | Abbreviated Original Text
 > 5. `[skill_dir]/reference/04-heuristics.md`
 > 6. `[skill_dir]/reference/05-symbols.md`
 > 7. `[skill_dir]/reference/06-nesting.md`
-> 8. `[document path]` — document to code
+> *(IG Extended and IG Logico only)* 8. `[skill_dir]/reference/07-context-taxonomy.md`
+> *(IG Logico only)* 9. `[skill_dir]/reference/08-logico-annotations.md`
+> `[document path]` — document to code
 >
 > **Pre-confirmed statement list (do not re-identify or re-classify — use these IDs and types exactly):**
 >
@@ -301,6 +326,10 @@ Refer to reference files as needed:
 - [reference/04-heuristics.md](reference/04-heuristics.md) — type heuristics & pre-coding
 - [reference/05-symbols.md](reference/05-symbols.md) — IG Script symbol reference
 - [reference/06-nesting.md](reference/06-nesting.md) — nesting patterns
+- *(IG Extended and IG Logico)* [reference/07-context-taxonomy.md](reference/07-context-taxonomy.md) — context annotation types
+- *(IG Logico only)* [reference/08-logico-annotations.md](reference/08-logico-annotations.md) — semantic annotation guide
+
+**At IG Extended and IG Logico:** Every `Cac` and `Cex` with explicit content must carry a `[ctx=TYPE]` annotation per `07-context-taxonomy.md`. Do not leave context components unannotated at these levels.
 
 **Cac/Cex in constitutive statements:** Do not skip context components for constitutive statements. Any adverbial clause, conditional phrase, or prepositional phrase not part of the Constituting Properties (P) must be evaluated as Cac or Cex. Signal words: *starting*, *as of*, *upon*, *where applicable*, *in the event that* → Cac; *in accordance with*, *pursuant to*, *as defined in*, *within the meaning of* → Cex. Pure definitional statements with no contextual qualifier may leave Cac/Cex empty.
 
@@ -503,6 +532,62 @@ Report:
 - Passive constructions requiring actor inference
 - Any statements decomposed from a single source sentence
 - Recommendations for inter-coder reliability checks
+
+---
+
+### Step 11 — Institutional Complexity Metrics *(IG Extended / IG Logico only; skip if Compute Metrics = disabled)*
+
+Run `complexity.py` on the coded CSV and write the metrics to a `_IG_metrics.csv` file.
+
+Derive the metrics output path from the coded CSV: if the coded CSV is `[base]_IG_coded.csv`, write to `[base]_IG_metrics.csv`.
+
+Run via Bash (substitute actual paths and the researcher's selected metric keys):
+
+```python
+import subprocess, sys, os
+
+skill_dir  = r"ACTUAL_SKILL_DIR"    # directory containing complexity.py
+coded_csv  = r"ACTUAL_CODED_CSV"    # e.g. r"C:\path\to\document_IG_coded.csv"
+metrics_csv = r"ACTUAL_METRICS_CSV" # e.g. r"C:\path\to\document_IG_metrics.csv"
+selected   = "SELECTED_METRIC_KEYS" # comma-separated, e.g. "depth,isc,isr,conditions"
+
+result = subprocess.run(
+    [sys.executable, os.path.join(skill_dir, "complexity.py"),
+     coded_csv, metrics_csv, "--metrics", selected],
+    capture_output=True, text=True,
+)
+print(result.stdout)
+if result.returncode != 0:
+    print("complexity.py error:", result.stderr)
+```
+
+After the script completes:
+1. Confirm the path `[base]_IG_metrics.csv` to the researcher.
+2. **If the output was Excel:** Add a `Complexity_Metrics` sheet to the Excel workbook using:
+
+```python
+import subprocess, sys
+subprocess.run([sys.executable, "-m", "pip", "install", "openpyxl", "--quiet"])
+import csv, openpyxl
+
+excel_path  = r"ACTUAL_EXCEL_PATH"
+metrics_csv = r"ACTUAL_METRICS_CSV"
+
+wb = openpyxl.load_workbook(excel_path)
+if "Complexity_Metrics" in wb.sheetnames:
+    del wb["Complexity_Metrics"]
+ws = wb.create_sheet("Complexity_Metrics")
+
+with open(metrics_csv, encoding="utf-8", newline="") as f:
+    for row in csv.reader(f):
+        ws.append(row)
+
+wb.save(excel_path)
+print(f"Complexity_Metrics sheet added to {excel_path}")
+```
+
+3. Display an in-chat summary table showing ID, Type, and each selected metric column.
+4. Note any statements that could not be parsed (empty `ig_script_full`) — these will show default values (depth=1, ISC=1, ISR=1, option counts=0).
 
 ---
 

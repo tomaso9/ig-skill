@@ -54,10 +54,10 @@ def load_csv(path):
 
 
 def _majority_or_first(values):
-    """Return majority value (count > 1), or values[0] if no majority."""
+    """Return majority value (count > 1), or UNDETERMINED if all three differ."""
     counts = Counter(values)
     top_value, top_count = counts.most_common(1)[0]
-    return top_value if top_count > 1 else values[0]
+    return top_value if top_count > 1 else "UNDETERMINED"
 
 
 def merge_three(paths, consensus_path, review_path):

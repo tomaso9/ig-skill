@@ -66,6 +66,35 @@ wb.close()
 
 Save `headers` and `data_rows` as **Excel input state** — `headers` is the list of column names, `data_rows` is the full list of data rows. Proceed to **Step 1.5** to select columns and classify statements.
 
+**If the file is `.csv`:** Run this via Bash:
+
+```python
+import csv
+with open(r"$ARGUMENTS", encoding="utf-8", newline="") as f:
+    reader = csv.DictReader(f)
+    rows = list(reader)
+    headers = list(reader.fieldnames or [])
+print("Columns:", headers)
+print(f"Total rows: {len(rows)}")
+for row in rows[:3]:
+    print(dict(row))
+```
+
+Check whether the file contains `id`, `type`, and `original_text` columns:
+
+- **If all three columns are present:** This is a pre-classified statement list from a previous coding session. Load all rows as `{"id": ..., "type": ..., "original_text": ...}` dicts and save as the **statement data**. Present the full list to the researcher:
+
+  | ID | Type | Abbreviated Original Text |
+  |----|------|--------------------------|
+
+  Then ask: *"This is the statement list saved from a previous coding session. Does everything look correct? If any statements should be reclassified or removed, let me know now. Otherwise reply 'yes' to proceed."*
+
+  Wait for the researcher's confirmation. Apply any requested changes. Save the confirmed list as the **authoritative statement list**. Skip Steps 4 and 5.
+
+  Continue to Step 2.
+
+- **If the required columns are not present:** Tell the researcher the file does not appear to be a pre-classified statement list (expected columns: `id`, `type`, `original_text`) and ask them to check the file or provide input in a supported format (`.txt`, `.pdf`, `.docx`, `.xlsx`). Do not proceed.
+
 **If the file is `.doc`:** Tell the user this format requires conversion and ask them to save as `.docx` or `.txt` first. Do not proceed.
 
 ---
@@ -208,6 +237,29 @@ Scan the document and identify all candidate institutional statements. For each:
 
 Present as a table with columns: ID | Type | Abbreviated Original Text
 
+Then ask: *"Does this classification look correct? If any statements should be reclassified or removed, let me know now. Otherwise reply 'yes' to proceed."*
+
+Wait for the researcher's confirmation. Apply any requested reclassifications.
+
+Then automatically save the confirmed statement list via Bash (substitute the actual output path and statement data):
+
+```python
+import csv, re
+output_path = r"OUTPUT_PATH"  # [doc_base]_statement_list.csv
+rows = STATEMENT_LIST  # list of {"id": ..., "type": ..., "original_text": ...}
+def _id_key(r):
+    m = re.match(r'^([A-Za-z]*)(\d+)(.*)$', r["id"])
+    return (m.group(1), int(m.group(2)), m.group(3)) if m else (r["id"], 0, "")
+rows = sorted(rows, key=_id_key)
+with open(output_path, "w", newline="", encoding="utf-8") as f:
+    writer = csv.DictWriter(f, fieldnames=["id", "type", "original_text"])
+    writer.writeheader()
+    writer.writerows(rows)
+print(f"Statement list saved: {output_path} ({len(rows)} statements)")
+```
+
+Confirm the saved path to the researcher: *"Statement list saved to `[doc_base]_statement_list.csv`. You can submit this file to the skill in a future session to code the same statements at a different level, skipping the identification step."*
+
 ---
 
 ### Step 6 — Encode Each Statement
@@ -232,10 +284,43 @@ Present as a table with columns: ID | Type | Abbreviated Original Text
 
    Wait for the researcher's reply. If they provide corrections (additions or removals), update your reference statement list accordingly before proceeding. Do not dispatch agents until the researcher confirms.
 
+   After the researcher confirms, automatically save the confirmed statement list via Bash (substitute the actual output path and statement data):
+
+   ```python
+   import csv, re
+   output_path = r"OUTPUT_PATH"  # [doc_base]_statement_list.csv
+   rows = STATEMENT_LIST  # list of {"id": ..., "type": ..., "original_text": ...}
+   def _id_key(r):
+       m = re.match(r'^([A-Za-z]*)(\d+)(.*)$', r["id"])
+       return (m.group(1), int(m.group(2)), m.group(3)) if m else (r["id"], 0, "")
+   rows = sorted(rows, key=_id_key)
+   with open(output_path, "w", newline="", encoding="utf-8") as f:
+       writer = csv.DictWriter(f, fieldnames=["id", "type", "original_text"])
+       writer.writeheader()
+       writer.writerows(rows)
+   print(f"Statement list saved: {output_path} ({len(rows)} statements)")
+   ```
+
+   Confirm the saved path to the researcher: *"Statement list saved to `[doc_base]_statement_list.csv`. You can submit this file to the skill in a future session to code the same statements at a different level, skipping the identification step."*
+
 5. **Document size check before dispatch.** Count the number of statements in the confirmed reference list.
 
-   - **≤ 40 statements:** Dispatch all statements in a single batch (proceed as described below).
-   - **> 40 statements:** Split the reference list into consecutive batches of up to 40 statements (e.g., S01–S40, S41–S80, …). For each batch: dispatch 3 agents (items 5–6 below), collect their AGENT_DATA blocks, write the three per-batch agent CSVs, then proceed to the next batch. Do not hold more than one batch's AGENT_DATA blocks in context simultaneously. After all batches are written, run merge.py once across all per-batch agent CSVs (appending batch suffixes, e.g. `_batch1_agent1.csv`, `_batch2_agent1.csv`, … → merge together per agent, then run inter-agent merge).
+   - **≤ 50 statements:** Dispatch all statements in a single batch (proceed as described below).
+   - **> 50 statements:** Split the reference list into consecutive batches of up to 50 statements (e.g., S01–S50, S51–S100, …). For each batch: dispatch 3 agents (items 5–6 below), collect their AGENT_DATA blocks, write the three per-batch agent CSVs, then proceed to the next batch. Do not hold more than one batch's AGENT_DATA blocks in context simultaneously. After all batches are written, run merge.py once across all per-batch agent CSVs (appending batch suffixes, e.g. `_batch1_agent1.csv`, `_batch2_agent1.csv`, … → merge together per agent, then run inter-agent merge).
+
+   > **Batch size note:** The 50-statement limit is a conservative default chosen to balance agent coding quality against the number of agent calls required for large documents. Larger batches reduce total agent calls but may increase the risk of agents skipping statements or producing lower-quality encodings.
+
+   **Agent call estimate:** Calculate total agent calls: `B × 3` if Multi-Agent Mode is ENABLED, `B × 1` if DISABLED (where B is the number of batches). If total calls exceed 9, display this notice and wait for the researcher's reply before dispatching:
+
+   > ⚠ **Large document notice:** Coding this document will require approximately **[N] agent calls** across **[B] batches** of up to 50 statements each. This may take considerable time.
+   >
+   > To reduce agent calls, consider:
+   > - **Switch to single-agent mode** — reduces calls from [N] to [B] *(show only if multi-agent is currently enabled)*
+   > - **Split the document** — code it in separate sections, submitting each as its own run; the saved `_statement_list.csv` can be split accordingly
+   >
+   > Reply **'proceed'** to continue as configured, **'single-agent'** to switch modes, or **'split'** for guidance on dividing the document.
+
+   If the researcher replies **'single-agent'**: update Multi-Agent Mode to DISABLED and recalculate total calls as B × 1. If the researcher replies **'split'**: explain how to divide the statement list into sections (e.g., by article, chapter, or fixed count), then stop — do not dispatch until the researcher resubmits a section. If the researcher replies **'proceed'**: continue as below.
 
    Dispatch 3 agents in parallel using `superpowers:dispatching-parallel-agents`. Each agent receives this instruction (substitute N = 1, 2, 3 for the run number, and paste the confirmed statement list for STATEMENT_LIST):
 
@@ -394,6 +479,7 @@ After the script completes:
 - Load `consensus_csv` into the internal data record: read each row and treat it as a coded statement record with the same fields as the single-agent path (`id`, `type`, `coding_level`, `original_text`, `A`, `A_prop`, `D`, `I`, `Bdir`, `Bdir_prop`, `Bind`, `Bind_prop`, `Cac`, `Cex`, `O`, `E`, `E_prop`, `M`, `F`, `P`, `P_prop`, `ig_script_full`, `notes`). This record is then available for Steps 7, 8, and 9 exactly as if single-agent encoding had produced it.
 - Load `consensus_csv` as the data source for Steps 7, 8, 9 (use the `review_flag` and `disagreement_fields` columns as needed).
 - Report to the researcher: total statements coded, number flagged for review, and the path to the review CSV.
+- **Fields showing `UNDETERMINED`** had no majority agreement — all three agents produced different values. These fields are flagged in the review CSV with all three agent values for manual adjudication. Complexity metrics for statements with `UNDETERMINED` in `ig_script_full` will default to depth=1, ISC=1, ISR=1.
 - Cross-check the consensus CSV statement IDs against your reference statement list from Step 6 item 3. If any statement you identified is absent from the consensus CSV (all 3 agents missed it), flag it explicitly: report those IDs to the researcher as "Statements identified by the orchestrator but absent from all agent outputs — require manual coding." Add a `review_flag = TRUE` row for each missing statement to the consensus CSV with all component fields empty and `disagreement_fields = "missing from all agent runs"`.
 - If in-chat markdown was selected, display each statement using the in-chat display format defined in the encoding section below. Use the consensus values from `consensus_csv` for each statement. For any statement where `review_flag = TRUE`, use the `[⚠ Sn] REVIEW REQUIRED` format defined there, including the `disagreement_fields` value on the "Flagged fields" line.
 

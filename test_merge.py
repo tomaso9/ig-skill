@@ -133,8 +133,8 @@ def test_majority_vote_used_as_consensus(tmp_path):
     assert consensus[0]["review_flag"] == "TRUE"
 
 
-def test_no_majority_falls_back_to_run1(tmp_path):
-    """All three differ — run1 value used as consensus."""
+def test_no_majority_returns_undetermined(tmp_path):
+    """All three differ — UNDETERMINED used as consensus."""
     rows = [
         [dict(BASE_ROW, A="farmers")],
         [dict(BASE_ROW, A="certified farmers")],
@@ -146,8 +146,24 @@ def test_no_majority_falls_back_to_run1(tmp_path):
     merge_three(paths, c, r)
 
     consensus = read_csv(c)
-    assert consensus[0]["A"] == "farmers"
+    assert consensus[0]["A"] == "UNDETERMINED"
     assert consensus[0]["review_flag"] == "TRUE"
+
+
+def test_no_majority_consensus_used_is_undetermined(tmp_path):
+    """All three differ — consensus_used in review CSV is UNDETERMINED."""
+    rows = [
+        [dict(BASE_ROW, A="farmers")],
+        [dict(BASE_ROW, A="certified farmers")],
+        [dict(BASE_ROW, A="organic farmers")],
+    ]
+    paths = make_paths(tmp_path, rows)
+    c = str(tmp_path / "consensus.csv")
+    r = str(tmp_path / "review.csv")
+    merge_three(paths, c, r)
+
+    review = read_csv(r)
+    assert review[0]["consensus_used"] == "UNDETERMINED"
 
 
 # ---------------------------------------------------------------------------

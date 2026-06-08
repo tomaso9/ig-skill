@@ -126,6 +126,16 @@ print(f"Session state initialized: {state_path}")
 
 ### Step 1.5 — Excel Column Selection & Statement Classification *(xlsx input only — skip for all other input types)*
 
+At the start of this step, read the session state via Bash:
+
+```python
+import json, os
+state_path = os.path.splitext(r"$ARGUMENTS")[0] + "_IG_session.json"
+with open(state_path, encoding="utf-8") as f:
+    state = json.load(f)
+print(f"Session state - step {state['current_step']} | input_type={state['input_type']}")
+```
+
 1. Use AskUserQuestion to ask:
 
    *"Which column contains the statement text?"*
@@ -169,6 +179,19 @@ Save the resulting list of `{"id": ..., "text": ...}` dicts as the **statement d
    *"Does this classification look correct? If any statements should be reclassified, let me know now. Otherwise reply 'yes' to proceed."*
 
 6. Wait for the researcher's confirmation. Apply any requested reclassifications. Save the confirmed list as the **authoritative statement list** — this replaces the output of Step 5 for all downstream steps.
+
+Update the session state via Bash:
+
+```python
+import json, os
+state_path = os.path.splitext(r"$ARGUMENTS")[0] + "_IG_session.json"
+with open(state_path, encoding="utf-8") as f:
+    state = json.load(f)
+state["current_step"] = "1.5"
+with open(state_path, "w", encoding="utf-8") as f:
+    json.dump(state, f, indent=2)
+print("State updated: current_step=1.5")
+```
 
 Continue to Step 2.
 
@@ -285,6 +308,16 @@ print(f"State updated: output={state['output_formats']} | multi_agent={state['mu
 
 ### Step 4 — Pre-Coding Familiarization
 
+At the start of this step, read the session state via Bash. If `input_type` is `xlsx` or `csv`, skip this step entirely - the skip guard below confirms this:
+
+```python
+import json, os
+state_path = os.path.splitext(r"$ARGUMENTS")[0] + "_IG_session.json"
+with open(state_path, encoding="utf-8") as f:
+    state = json.load(f)
+print(f"Session state - step {state['current_step']} | input_type={state['input_type']} | coding_level={state['coding_level']}")
+```
+
 *(Skip this step if input was `.xlsx` — document familiarization is not applicable to pre-identified statement lists. Statement list already confirmed in Step 1.5.)*
 
 Scan the document and report:
@@ -297,9 +330,32 @@ Scan the document and report:
 6. **Definitions section** — If present, note defined terms; these set the decomposition level
 7. **Confirmed settings** — Coding level: [level chosen in Step 2] | Output: [format(s) chosen in Step 3]
 
+Then update the session state via Bash:
+
+```python
+import json, os
+state_path = os.path.splitext(r"$ARGUMENTS")[0] + "_IG_session.json"
+with open(state_path, encoding="utf-8") as f:
+    state = json.load(f)
+state["current_step"] = "4"
+with open(state_path, "w", encoding="utf-8") as f:
+    json.dump(state, f, indent=2)
+print("State updated: current_step=4")
+```
+
 ---
 
 ### Step 5 — Identify & Delineate Institutional Statements
+
+At the start of this step, read the session state via Bash. If `input_type` is `xlsx` or `csv`, skip this step entirely:
+
+```python
+import json, os
+state_path = os.path.splitext(r"$ARGUMENTS")[0] + "_IG_session.json"
+with open(state_path, encoding="utf-8") as f:
+    state = json.load(f)
+print(f"Session state - step {state['current_step']} | input_type={state['input_type']}")
+```
 
 *(Skip this step if input was `.xlsx` — statement list already confirmed in Step 1.5.)*
 
@@ -335,6 +391,20 @@ print(f"Statement list saved: {output_path} ({len(rows)} statements)")
 ```
 
 Confirm the saved path to the researcher: *"Statement list saved to `[doc_base]_statement_list.csv`. You can submit this file to the skill in a future session to code the same statements at a different level, skipping the identification step."*
+
+Update the session state via Bash (substitute the actual saved path for STATEMENT_LIST_PATH):
+
+```python
+import json, os
+state_path = os.path.splitext(r"$ARGUMENTS")[0] + "_IG_session.json"
+with open(state_path, encoding="utf-8") as f:
+    state = json.load(f)
+state["statement_list_path"] = r"STATEMENT_LIST_PATH"  # e.g. r"C:\path\to\doc_statement_list.csv"
+state["current_step"] = "5"
+with open(state_path, "w", encoding="utf-8") as f:
+    json.dump(state, f, indent=2)
+print(f"State updated: statement_list_path set, current_step=5")
+```
 
 ---
 

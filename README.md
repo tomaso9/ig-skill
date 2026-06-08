@@ -54,26 +54,16 @@ The diagram below shows every decision point in a complete coding session.
 ```
 START: /ig-code <file>
 │
-├─ Input type?
-│   │
-│   ├─ .txt / .pdf / .docx
-│   │   Step 1:  Load document text
-│   │   Step 4:  Familiarize — document type, zones, key actors
-│   │   Step 5:  Identify & classify all statements → researcher confirms
-│   │            Save confirmed list to <doc>_statement_list.csv
-│   │
-│   ├─ .xlsx
-│   │   Step 1:   Load workbook (headers + all rows)
-│   │   Step 1.5: Choose ID column + text column
-│   │             Classify each row as REG / CONST / NON-IS
-│   │             Researcher confirms → confirmed list
-│   │             (Skips Steps 4 and 5)
-│   │
+├─ Step 1: Load document
+│   ├─ .txt / .pdf / .docx  →  Load text
+│   ├─ .xlsx  →  Load workbook (headers + rows)
+│   │             Step 1.5: Choose ID + text columns
+│   │                       Classify rows as REG / CONST / NON-IS
+│   │                       Researcher confirms → confirmed list
+│   │                       (Skips Steps 4 and 5)
 │   └─ .csv  (pre-classified list from a prior session)
-│       Step 1: Load rows, researcher confirms
-│               (Skips Steps 1.5, 4, and 5)
-│
-│   ── confirmed statement list available ──
+│             Load rows, researcher confirms
+│             (Skips Steps 1.5, 4, and 5)
 │
 ├─ Step 2: Choose coding level
 │   ├─ IG Core      — basic structural analysis
@@ -81,6 +71,12 @@ START: /ig-code <file>
 │   └─ IG Logico    — full semantic + ontological annotation
 │
 ├─ Step 3: Choose output format(s), multi-agent mode, and metrics
+│
+├─ Step 4: Pre-coding familiarization  (skipped for .xlsx and .csv)
+│
+├─ Step 5: Identify & classify all statements → researcher confirms
+│          Save confirmed list to <doc>_statement_list.csv
+│          (skipped for .xlsx and .csv)
 │
 ├─ Encoding
 │   │
@@ -142,7 +138,7 @@ Choose whether to run with one agent or three. See [Multi-Agent Mode](#multi-age
 
 ### Question 4 — Complexity Metrics *(IG Extended / IG Logico only)*
 
-Whether to compute institutional complexity metrics (ISC, ISR, Tree Depth) after coding. If yes, you select which metrics.
+Whether to compute institutional complexity metrics after coding. Available metrics include ISC, ISR, Tree Depth, and component-level variability measures (Conditions, Discretion, Activity State, Application). If yes, you select which metrics to include.
 
 ---
 

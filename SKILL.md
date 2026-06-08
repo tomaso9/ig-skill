@@ -183,7 +183,7 @@ import json, os
 state_path = os.path.splitext(r"$ARGUMENTS")[0] + "_IG_session.json"
 with open(state_path, encoding="utf-8") as f:
     state = json.load(f)
-print(f"Session state — step {state['current_step']} | input_type={state['input_type']}")
+print(f"Session state - step {state['current_step']} | input_type={state['input_type']}")
 ```
 
 Use AskUserQuestion to ask:
@@ -220,7 +220,7 @@ import json, os
 state_path = os.path.splitext(r"$ARGUMENTS")[0] + "_IG_session.json"
 with open(state_path, encoding="utf-8") as f:
     state = json.load(f)
-print(f"Session state — step {state['current_step']} | coding_level={state['coding_level']}")
+print(f"Session state - step {state['current_step']} | coding_level={state['coding_level']}")
 ```
 
 Use AskUserQuestion to ask:
@@ -278,7 +278,7 @@ state["selected_metrics"] = SELECTED_METRICS # e.g. ["depth", "isc"] or []
 state["current_step"] = "3"
 with open(state_path, "w", encoding="utf-8") as f:
     json.dump(state, f, indent=2)
-print(f"State updated: output={state['output_formats']} | multi_agent={state['multi_agent_mode']} | metrics={state['compute_metrics']}")
+print(f"State updated: output={state['output_formats']} | multi_agent={state['multi_agent_mode']} | metrics={state['compute_metrics']} | selected={state['selected_metrics']}")
 ```
 
 ---

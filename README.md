@@ -94,7 +94,8 @@ START: /ig-code <file>
 │   │   └─ Step 6.5: Merge three outputs
 │   │                Field-by-field comparison → majority vote (2-of-3)
 │   │                All three differ → UNDETERMINED (flagged for review)
-│   │                Writes: <doc>_IG_coded.csv + <doc>_IG_review.csv
+│   │                Computes inter-coder reliability (% agreement + Krippendorff's α)
+│   │                Writes: <doc>_IG_coded.csv + <doc>_IG_review.csv + <doc>_IG_reliability.csv
 │   │
 │   └─ Multi-agent mode = NO
 │       └─ Step 6: Single agent encodes all statements sequentially
@@ -175,6 +176,20 @@ In addition to your chosen output format(s), multi-agent mode always writes:
 | `run2_value` | Agent 2's value |
 | `run3_value` | Agent 3's value |
 | `consensus_used` | Value written to consensus CSV (`UNDETERMINED` if all three differ) |
+
+**`<document>_IG_reliability.csv`** — inter-coder reliability statistics, one row per IG component field plus an OVERALL row:
+
+| Column | Description |
+|--------|-------------|
+| `field` | IG component name (e.g. `A`, `D`, `Cac`) or `OVERALL` |
+| `n_statements` | Statements where all 3 agents coded this field |
+| `n_full_agreement` | Of those, statements where all 3 values match |
+| `pct_agreement` | `n_full_agreement / n_statements × 100` |
+| `krippendorffs_alpha` | Nominal Krippendorff's α corrected for chance |
+
+> **Interpreting reliability:** α ≥ 0.80 is the conventional threshold for content analysis reliability (Krippendorff, 2004). Percent agreement and α are most meaningful for closed-vocabulary fields (`type`, `D`, `M`, `F`). For free-text component fields (`A`, `I`, `Bdir`, etc.) exact-string matching is used, so minor wording differences between agents count as disagreements — interpret α for those fields as a lower bound.
+
+If Excel output is selected, a **Reliability** sheet is added to the workbook alongside the coded data, including this interpretive note.
 
 In the IG Parser `.txt` output, flagged statements carry a `[REVIEW REQUIRED]` marker and a `Review:` line listing the disagreeing fields.
 

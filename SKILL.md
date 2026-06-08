@@ -97,7 +97,7 @@ Check whether the file contains `id`, `type`, and `original_text` columns:
 
 **If the file is `.doc`:** Tell the user this format requires conversion and ask them to save as `.docx` or `.txt` first. Do not proceed.
 
-After loading the document (regardless of format), derive the session state file path and write the initial state via Bash:
+After successfully loading the document (for `.txt`, `.pdf`, `.docx`, `.xlsx`, or a pre-classified `.csv`), derive the session state file path and write the initial state via Bash:
 
 ```python
 import json, os

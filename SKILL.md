@@ -176,6 +176,16 @@ Continue to Step 2.
 
 ### Step 2 — Ask the Researcher: Coding Level
 
+At the start of this step, read the session state via Bash:
+
+```python
+import json, os
+state_path = os.path.splitext(r"$ARGUMENTS")[0] + "_IG_session.json"
+with open(state_path, encoding="utf-8") as f:
+    state = json.load(f)
+print(f"Session state — step {state['current_step']} | input_type={state['input_type']}")
+```
+
 Use AskUserQuestion to ask:
 
 **Question 1:** "At which level of expressiveness would you like the coding to be performed?"
@@ -185,9 +195,33 @@ Use AskUserQuestion to ask:
 
 Wait for the researcher's answer before proceeding. Save the selected level as the **Coding Level** for all subsequent steps.
 
+Then update the session state via Bash (substitute the researcher's selection for CODING_LEVEL):
+
+```python
+import json, os
+state_path = os.path.splitext(r"$ARGUMENTS")[0] + "_IG_session.json"
+with open(state_path, encoding="utf-8") as f:
+    state = json.load(f)
+state["coding_level"] = "CODING_LEVEL"  # e.g. "IG Core", "IG Extended", "IG Logico"
+state["current_step"] = "2"
+with open(state_path, "w", encoding="utf-8") as f:
+    json.dump(state, f, indent=2)
+print(f"State updated: coding_level={state['coding_level']}")
+```
+
 ---
 
 ### Step 3 — Ask the Researcher: Output Format
+
+At the start of this step, read the session state via Bash:
+
+```python
+import json, os
+state_path = os.path.splitext(r"$ARGUMENTS")[0] + "_IG_session.json"
+with open(state_path, encoding="utf-8") as f:
+    state = json.load(f)
+print(f"Session state — step {state['current_step']} | coding_level={state['coding_level']}")
+```
 
 Use AskUserQuestion to ask:
 
@@ -229,6 +263,23 @@ If the researcher answers **Yes**, ask:
 - [ ] Application Variability + Option Count — variability from Bdir/Bind operators (level 0)"
 
 Save as **Compute Metrics**: enabled / disabled and **Selected Metrics**: comma-separated keys from `{depth, isc, isr, conditions, discretion, activity_state, application}` matching the researcher's selections.
+
+Then update the session state via Bash (substitute all values from the researcher's responses; if coding level is IG Core or researcher declined metrics, set compute_metrics=False and selected_metrics=[]):
+
+```python
+import json, os
+state_path = os.path.splitext(r"$ARGUMENTS")[0] + "_IG_session.json"
+with open(state_path, encoding="utf-8") as f:
+    state = json.load(f)
+state["output_formats"] = OUTPUT_FORMATS     # e.g. ["csv", "ig_parser"]
+state["multi_agent_mode"] = MULTI_AGENT_MODE # True or False
+state["compute_metrics"] = COMPUTE_METRICS   # True or False
+state["selected_metrics"] = SELECTED_METRICS # e.g. ["depth", "isc"] or []
+state["current_step"] = "3"
+with open(state_path, "w", encoding="utf-8") as f:
+    json.dump(state, f, indent=2)
+print(f"State updated: output={state['output_formats']} | multi_agent={state['multi_agent_mode']} | metrics={state['compute_metrics']}")
+```
 
 ---
 

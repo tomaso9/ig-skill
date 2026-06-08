@@ -497,6 +497,37 @@ print(f"Session state - step {state['current_step']} | coding_level={state['codi
    print(f"State updated: {TOTAL_STATEMENTS} statements, {NUM_BATCHES} batch(es)")
    ```
 
+   **Before dispatching agents, load all required reference files via Bash** (substitute actual values for `ACTUAL_SKILL_DIR` and `CODING_LEVEL`):
+
+   ```python
+   import os
+
+   skill_dir = r"ACTUAL_SKILL_DIR"   # resolved in item 2 above
+   coding_level = "CODING_LEVEL"     # from Step 2
+   statement_types = set(s["type"] for s in STATEMENT_LIST)
+
+   def read_ref(filename):
+       with open(os.path.join(skill_dir, "reference", filename), encoding="utf-8") as f:
+           return f.read()
+
+   ref_01 = read_ref("01-components.md")
+   ref_05 = read_ref("05-symbols.md")
+   ref_02 = read_ref("02-regulative-coding.md") if "REG" in statement_types else ""
+   ref_03 = read_ref("03-constitutive-coding.md") if "CONST" in statement_types else ""
+   ref_06 = read_ref("06-nesting.md") if coding_level in ["IG Extended", "IG Logico"] else ""
+   ref_07 = read_ref("07-context-taxonomy.md") if coding_level in ["IG Extended", "IG Logico"] else ""
+   ref_08 = read_ref("08-logico-annotations.md") if coding_level == "IG Logico" else ""
+
+   print("Reference materials loaded:")
+   for name, content in [("01-components", ref_01), ("02-regulative", ref_02),
+                          ("03-constitutive", ref_03), ("05-symbols", ref_05),
+                          ("06-nesting", ref_06), ("07-context-taxonomy", ref_07),
+                          ("08-logico", ref_08)]:
+       print(f"  {name}: {len(content):,} chars" if content else f"  {name}: skipped")
+   ```
+
+   After this block completes, you hold `ref_01` through `ref_08` as strings. Paste each non-empty string into the agent prompt template below under `## Reference Materials`.
+
    Dispatch 3 agents in parallel using `superpowers:dispatching-parallel-agents`. Each agent receives this instruction (substitute N = 1, 2, 3 for the run number, and paste the confirmed statement list for STATEMENT_LIST):
 
 > You are an expert IG 2.0 coder. Apply the ig-code skill to the document below. Do not ask the user any questions — all settings are fixed.
@@ -505,25 +536,44 @@ print(f"Session state - step {state['current_step']} | coding_level={state['codi
 > - Coding level: [Coding Level from Step 2]
 > - Multi-Agent Mode: DISABLED (you are a sub-agent; always use the single-agent encoding path in Step 6)
 >
-> **Read these files in order:**
-> 1. `[skill_dir]/SKILL.md`
-> 2. `[skill_dir]/reference/01-components.md`
-> 3. `[skill_dir]/reference/02-regulative-coding.md`
-> 4. `[skill_dir]/reference/03-constitutive-coding.md`
-> 5. `[skill_dir]/reference/04-heuristics.md`
-> 6. `[skill_dir]/reference/05-symbols.md`
-> 7. `[skill_dir]/reference/06-nesting.md`
-> *(IG Extended and IG Logico only)* 8. `[skill_dir]/reference/07-context-taxonomy.md`
-> *(IG Logico only)* 9. `[skill_dir]/reference/08-logico-annotations.md`
-> `[document path]` — document to code
+> ## Reference Materials
+> *(All reference content is provided below. Do not read any files — use only what is provided here.)*
 >
-> **Pre-confirmed statement list (do not re-identify or re-classify — use these IDs and types exactly):**
+> ### IG 2.0 Components
+> [paste full content of ref_01 here]
+>
+> ### IG Script Symbols
+> [paste full content of ref_05 here]
+>
+> [if ref_02 is non-empty — batch contains REG statements:]
+> ### Regulative Coding Rules
+> [paste full content of ref_02 here]
+>
+> [if ref_03 is non-empty — batch contains CONST statements:]
+> ### Constitutive Coding Rules
+> [paste full content of ref_03 here]
+>
+> [if ref_06 is non-empty — coding level is IG Extended or IG Logico:]
+> ### Nesting Patterns
+> [paste full content of ref_06 here]
+>
+> [if ref_07 is non-empty — coding level is IG Extended or IG Logico:]
+> ### Context Taxonomy
+> [paste full content of ref_07 here]
+>
+> [if ref_08 is non-empty — coding level is IG Logico:]
+> ### Logico Annotations
+> [paste full content of ref_08 here]
+>
+> ---
+>
+> **Pre-confirmed statement list — types are final:**
+>
+> The `type` field for each statement has been determined by the orchestrator. **Do not change any statement's type under any circumstances.** Do not apply classification heuristics — the types below are authoritative. Your task is component coding only: fill in the IG Script fields using the reference materials in `## Reference Materials` above.
 >
 > STATEMENT_LIST
 >
-> **If the input file (`[document path]`) is an `.xlsx` file:** Skip Steps 1 and 4 entirely — the STATEMENT_LIST above is the authoritative source. Proceed directly to Step 6 encoding.
->
-> **Otherwise:** Execute Steps 1, 4, 6 from SKILL.md only. Skip Steps 2, 3, 5, 7, 8, 9, 10. For Step 4, do the pre-coding familiarization but do NOT produce a statement list — the list above is authoritative. For Step 6, encode each statement in the list above using its pre-assigned ID and type.
+> **Your task:** Encode each statement in the pre-confirmed list below at the specified coding level. Use the `## Reference Materials` section above as your only reference. Do not read any files, do not run any skill steps, and do not change any statement's type.
 >
 > Do not add, remove, split, or merge statements, and do not change the type of any statement. Do NOT attempt to use the Write or Bash tools — sub-agents run in a sandboxed context and cannot receive interactive permission prompts.
 >

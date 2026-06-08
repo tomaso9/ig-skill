@@ -97,6 +97,31 @@ Check whether the file contains `id`, `type`, and `original_text` columns:
 
 **If the file is `.doc`:** Tell the user this format requires conversion and ask them to save as `.docx` or `.txt` first. Do not proceed.
 
+After loading the document (regardless of format), derive the session state file path and write the initial state via Bash:
+
+```python
+import json, os
+doc_path = r"$ARGUMENTS"
+doc_base = os.path.splitext(doc_path)[0]
+state_path = doc_base + "_IG_session.json"
+input_ext = os.path.splitext(doc_path)[1].lower().lstrip(".")
+state = {
+    "input_path": doc_path,
+    "input_type": input_ext,
+    "coding_level": None,
+    "output_formats": [],
+    "multi_agent_mode": None,
+    "compute_metrics": None,
+    "selected_metrics": [],
+    "statement_list_path": None,
+    "current_step": "1",
+    "batch_config": None
+}
+with open(state_path, "w", encoding="utf-8") as f:
+    json.dump(state, f, indent=2)
+print(f"Session state initialized: {state_path}")
+```
+
 ---
 
 ### Step 1.5 — Excel Column Selection & Statement Classification *(xlsx input only — skip for all other input types)*

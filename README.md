@@ -10,11 +10,9 @@ Based on: *Frantz & Siddiki, IG 2.0 Codebook v1.4 (October 2024)*
 
 Given a rule document (or a pre-identified statement list), the skill:
 
-1. **Identifies** all institutional statements and classifies each as regulative (REG), constitutive (CONST), or non-institutional (NON-IS) — or accepts a pre-identified list from an `.xlsx` file
+1. **Identifies** all institutional statements and classifies each as regulative (REG), constitutive (CONST), or non-institutional (NON-IS)
 2. **Encodes** each statement in IG Script notation at your chosen level of expressiveness
 3. **Produces** structured outputs ready for analysis — in-chat review, spreadsheet, or IG Parser input
-
-You choose the coding level and output format interactively. Optionally, you can enable **multi-agent mode**, where three independent agents code the document in parallel and any disagreements are automatically flagged for your review.
 
 ---
 
@@ -40,19 +38,94 @@ Or copy the `ig-skill/` folder to your project's `.claude/skills/` directory:
 /ig-code policy.pdf
 /ig-code statute.docx
 /ig-code statements.xlsx
+/ig-code prior_session_statement_list.csv
 ```
 
-**For `.xlsx` input:** Each row must be a pre-identified institutional statement. The file must include at least two columns — one for the statement text and one for a unique statement ID (e.g., S1, S2…). The skill skips document familiarization and statement identification and goes straight to coding, using the rows as the confirmed statement list.
+**For `.xlsx` input:** Each row must be a pre-identified institutional statement. The file must include at least two columns — one for the statement text and one for a unique statement ID (e.g., S1, S2…).
 
-The skill asks three questions before coding begins:
+**For `.csv` input:** A statement list saved from a previous coding session (`<doc>_statement_list.csv`). The skill loads it directly and skips statement identification.
+
+---
+
+## Workflow Decision Tree
+
+The diagram below shows every decision point in a complete coding session.
+
+```
+START: /ig-code <file>
+│
+├─ Input type?
+│   │
+│   ├─ .txt / .pdf / .docx
+│   │   Step 1:  Load document text
+│   │   Step 4:  Familiarize — document type, zones, key actors
+│   │   Step 5:  Identify & classify all statements → researcher confirms
+│   │            Save confirmed list to <doc>_statement_list.csv
+│   │
+│   ├─ .xlsx
+│   │   Step 1:   Load workbook (headers + all rows)
+│   │   Step 1.5: Choose ID column + text column
+│   │             Classify each row as REG / CONST / NON-IS
+│   │             Researcher confirms → confirmed list
+│   │             (Skips Steps 4 and 5)
+│   │
+│   └─ .csv  (pre-classified list from a prior session)
+│       Step 1: Load rows, researcher confirms
+│               (Skips Steps 1.5, 4, and 5)
+│
+│   ── confirmed statement list available ──
+│
+├─ Step 2: Choose coding level
+│   ├─ IG Core      — basic structural analysis
+│   ├─ IG Extended  — property hierarchies, nesting, context types
+│   └─ IG Logico    — full semantic + ontological annotation
+│
+├─ Step 3: Choose output format(s), multi-agent mode, and metrics
+│
+├─ Encoding
+│   │
+│   ├─ Multi-agent mode = YES
+│   │   │
+│   │   ├─ Statement count ≤ 50?
+│   │   │   ├─ YES ── 1 batch, 3 agents
+│   │   │   └─ NO  ── N batches of up to 50 statements each
+│   │   │             (if total agent calls > 9: large-doc warning shown)
+│   │   │
+│   │   ├─ Step 6:   Orchestrator reads reference files, pre-assigns types,
+│   │   │            dispatches 3 agents in parallel per batch
+│   │   │            Each agent encodes using inline reference → AGENT_DATA
+│   │   │
+│   │   └─ Step 6.5: Merge three outputs
+│   │                Field-by-field comparison → majority vote (2-of-3)
+│   │                All three differ → UNDETERMINED (flagged for review)
+│   │                Writes: <doc>_IG_coded.csv + <doc>_IG_review.csv
+│   │
+│   └─ Multi-agent mode = NO
+│       └─ Step 6: Single agent encodes all statements sequentially
+│
+├─ Step 7:  Write CSV / Excel output       (if selected)
+├─ Step 8:  Write IG Parser .txt output    (if selected)
+├─ Step 9:  Display summary table          (always shown)
+├─ Step 10: Report coding notes & ambiguities
+│
+└─ Metrics enabled AND level ≥ IG Extended?
+    ├─ YES → Step 11: Run complexity.py → <doc>_IG_metrics.csv
+    └─ NO  → Done
+```
+
+---
+
+## Setup Questions
+
+The skill asks up to four questions before coding begins.
 
 ### Question 1 — Coding Level
 
 | Level | Description | Best for |
 |-------|-------------|----------|
-| **IG Core** | Basic structural analysis. Human-readable. Moderate syntactic detail. | First-pass coding, large documents |
-| **IG Extended** | Fine-grained decomposition: property hierarchies, component nesting, rich context categorization. | Complex documents, computational use |
-| **IG Logico** | Full semantic annotation: institutional function labels, animacy, role, metatype. | Theory-linked analysis |
+| **IG Core** | Basic structural analysis. Identifies all components at a fundamental level. | First-pass coding, large documents |
+| **IG Extended** | Deep structural analysis. Adds property hierarchies, nesting, and fine-grained context categorization. | Complex documents, computational use |
+| **IG Logico** | Full semantic annotation. Builds on Extended with institutional function labels and ontological annotations. | Theory-linked analysis |
 
 ### Question 2 — Output Format
 
@@ -65,20 +138,24 @@ Select one or more:
 
 ### Question 3 — Multi-Agent Mode
 
-Choose whether to run in single-agent or multi-agent mode (see below).
+Choose whether to run with one agent or three. See [Multi-Agent Mode](#multi-agent-mode).
+
+### Question 4 — Complexity Metrics *(IG Extended / IG Logico only)*
+
+Whether to compute institutional complexity metrics (ISC, ISR, Tree Depth) after coding. If yes, you select which metrics.
 
 ---
 
 ## Multi-Agent Mode
 
-When enabled, three independent Claude agents code the document separately. Any disagreement between agents — in statement type, component presence, or component content — is flagged for your review.
+When enabled, three independent Claude agents code the document in parallel. Any disagreement between agents — in component content, presence, or value — is flagged for your review.
 
 ### How it works
 
-1. **Pre-dispatch:** The orchestrating agent runs its own statement identification (Steps 4–5) and presents the statement list to you for confirmation before dispatching.
-2. **Dispatch:** Three agents code the document independently in parallel, each producing a CSV.
-3. **Merge:** Disagreements are detected field by field. Consensus values are determined by majority vote (2-of-3); if all three differ, the first agent's value is used as a starting point.
-4. **Cross-check:** The consensus statement list is compared against the orchestrator's reference. Any statement missed by all three agents is flagged explicitly.
+1. **Pre-dispatch:** The orchestrator assigns statement types (REG/CONST/NON-IS) and reads all required IG 2.0 reference materials. Agents receive the reference content inline in their task prompt — they do not read any files themselves.
+2. **Dispatch:** Three agents code the statements in parallel, each producing a structured data block.
+3. **Merge:** Disagreements are detected field by field. Consensus values are determined by majority vote (2-of-3). If all three agents produce different values for a field, that field is set to **`UNDETERMINED`** and flagged for human adjudication.
+4. **Cross-check:** The consensus statement list is compared against the orchestrator's reference list. Any statement missed by all three agents is flagged explicitly.
 5. **Output:** Your chosen format(s) are produced from the consensus values. Flagged statements are marked `⚠` throughout.
 
 ### Multi-agent outputs
@@ -101,15 +178,23 @@ In addition to your chosen output format(s), multi-agent mode always writes:
 | `run1_value` | Agent 1's value |
 | `run2_value` | Agent 2's value |
 | `run3_value` | Agent 3's value |
-| `consensus_used` | Value written to the consensus CSV |
+| `consensus_used` | Value written to consensus CSV (`UNDETERMINED` if all three differ) |
 
 In the IG Parser `.txt` output, flagged statements carry a `[REVIEW REQUIRED]` marker and a `Review:` line listing the disagreeing fields.
 
 ### When to use multi-agent mode
 
-Multi-agent mode is recommended when coding quality matters more than speed — inter-rater reliability studies, systematic policy analysis, or any use where you want to know which coding decisions were unambiguous and which require expert judgment.
+Use multi-agent mode when coding quality matters more than speed — inter-rater reliability studies, systematic policy analysis, or any use where you want to know which decisions were unambiguous and which require expert judgment.
 
 Single-agent mode is faster and appropriate for exploratory work or documents where you plan to review the output yourself.
+
+---
+
+## Session State
+
+After each step, the skill writes a `<document>_IG_session.json` file alongside your outputs. This file records all confirmed session settings: input path and type, coding level, output formats, multi-agent mode, metrics selection, statement list path, current step, and batch configuration.
+
+If a session is interrupted or the context window is compressed mid-session, the skill reads this file at the start of each step to recover its state rather than relying on in-context memory.
 
 ---
 
@@ -158,8 +243,6 @@ Statement: A,p(Certified) A(farmers) D(must) I(submit) Bdir(organic system plan)
 ```
 
 ### In-chat Markdown
-
-Displays each statement inline:
 
 ```
 [S1] REGULATIVE | IG Core

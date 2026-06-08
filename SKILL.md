@@ -696,9 +696,10 @@ import subprocess, sys, os
 skill_dir = r"ACTUAL_SKILL_DIR"   # e.g. r"C:\path\to\ig-skill"
 doc_base  = r"ACTUAL_DOC_BASE"    # e.g. r"C:\path\to\document" (no extension)
 
-agent_csvs    = [f"{doc_base}_IG_agent{i}.csv" for i in range(1, 4)]
-consensus_csv = f"{doc_base}_IG_coded.csv"
-review_csv    = f"{doc_base}_IG_review.csv"
+agent_csvs      = [f"{doc_base}_IG_agent{i}.csv" for i in range(1, 4)]
+consensus_csv   = f"{doc_base}_IG_coded.csv"
+review_csv      = f"{doc_base}_IG_review.csv"
+reliability_csv = f"{doc_base}_IG_reliability.csv"
 
 result = subprocess.run(
     [sys.executable, os.path.join(skill_dir, "merge.py")]
@@ -710,10 +711,55 @@ if result.returncode != 0:
     print("merge.py error:", result.stderr)
 ```
 
+After merge.py completes, immediately run the reliability script via Bash:
+
+```python
+import subprocess, sys, os
+
+result = subprocess.run(
+    [sys.executable, os.path.join(skill_dir, "reliability.py")]
+    + agent_csvs + [reliability_csv],
+    capture_output=True, text=True,
+)
+print(result.stdout)
+if result.returncode != 0:
+    print("reliability.py error:", result.stderr)
+```
+
+Then read the reliability CSV and display an in-chat summary via Bash:
+
+```python
+import csv
+
+rows = []
+with open(reliability_csv, encoding="utf-8", newline="") as f:
+    rows = list(csv.DictReader(f))
+
+overall = next(r for r in rows if r["field"] == "OVERALL")
+field_rows = [r for r in rows if r["field"] != "OVERALL"]
+
+print(f"\nOverall: {overall['pct_agreement']}% full agreement | Krippendorff's α = {overall['krippendorffs_alpha']}")
+print(f"{'Field':<12} {'n':>5} {'% agree':>9} {'α':>8}")
+print("-" * 38)
+for r in field_rows:
+    print(f"{r['field']:<12} {r['n_statements']:>5} {r['pct_agreement']:>9} {r['krippendorffs_alpha']:>8}")
+```
+
+Display the reliability summary to the researcher using this in-chat format:
+
+**Inter-coder reliability (3 agents)**
+
+| Field | n | % Agreement | Krippendorff's α |
+|-------|---|-------------|-----------------|
+| [one row per field from the CSV] |
+| **OVERALL** | [n] | [pct] | [α] |
+
+Then add this note: *"Percent agreement = proportion of statements where all 3 agents produced identical values. Krippendorff's α accounts for chance agreement; α ≥ 0.80 is the conventional threshold for reliability in content analysis. For free-text component fields (A, I, Bdir, etc.) exact-string matching is used — minor wording differences count as disagreements, so α for those fields will tend to be conservative. The full per-field breakdown is saved to `[base]_IG_reliability.csv`."*
+
 After the script completes:
 - Load `consensus_csv` into the internal data record: read each row and treat it as a coded statement record with the same fields as the single-agent path (`id`, `type`, `coding_level`, `original_text`, `A`, `A_prop`, `D`, `I`, `Bdir`, `Bdir_prop`, `Bind`, `Bind_prop`, `Cac`, `Cex`, `O`, `E`, `E_prop`, `M`, `F`, `P`, `P_prop`, `ig_script_full`, `notes`). This record is then available for Steps 7, 8, and 9 exactly as if single-agent encoding had produced it.
 - Load `consensus_csv` as the data source for Steps 7, 8, 9 (use the `review_flag` and `disagreement_fields` columns as needed).
-- Report to the researcher: total statements coded, number flagged for review, and the path to the review CSV.
+- Report to the researcher: total statements coded, number flagged for review, paths to the review CSV and reliability CSV.
 - **Fields showing `UNDETERMINED`** had no majority agreement — all three agents produced different values. These fields are flagged in the review CSV with all three agent values for manual adjudication. Complexity metrics for statements with `UNDETERMINED` in `ig_script_full` will default to depth=1, ISC=1, ISR=1.
 - Cross-check the consensus CSV statement IDs against your reference statement list from Step 6 item 3. If any statement you identified is absent from the consensus CSV (all 3 agents missed it), flag it explicitly: report those IDs to the researcher as "Statements identified by the orchestrator but absent from all agent outputs — require manual coding." Add a `review_flag = TRUE` row for each missing statement to the consensus CSV with all component fields empty and `disagreement_fields = "missing from all agent runs"`.
 - If in-chat markdown was selected, display each statement using the in-chat display format defined in the encoding section below. Use the consensus values from `consensus_csv` for each statement. For any statement where `review_flag = TRUE`, use the `[⚠ Sn] REVIEW REQUIRED` format defined there, including the `disagreement_fields` value on the "Flagged fields" line.
@@ -812,9 +858,37 @@ print(f"Excel written: {output_path} ({len(ROWS_DATA)} statements)")
 
 After writing, confirm the file path to the researcher.
 
-**If Multi-Agent Mode was ENABLED:** The consensus CSV (`[base]_IG_coded.csv`) was already written by Step 6.5. Skip the write scripts above and confirm both paths to the researcher:
+**If Multi-Agent Mode was ENABLED:** The consensus CSV (`[base]_IG_coded.csv`) was already written by Step 6.5. Skip the write scripts above and confirm all output paths to the researcher:
 - Consensus CSV: `[base]_IG_coded.csv`
 - Review CSV: `[base]_IG_review.csv`
+- Reliability CSV: `[base]_IG_reliability.csv`
+
+**If Multi-Agent Mode was ENABLED and Excel output was selected**, also add a `Reliability` sheet to the Excel workbook via Bash:
+
+```python
+import subprocess, sys
+subprocess.run([sys.executable, "-m", "pip", "install", "openpyxl", "--quiet"])
+import csv, openpyxl
+
+excel_path      = r"ACTUAL_EXCEL_PATH"      # e.g. r"C:\path\to\document_IG_coded.xlsx"
+reliability_csv = r"ACTUAL_RELIABILITY_CSV" # e.g. r"C:\path\to\document_IG_reliability.csv"
+
+wb = openpyxl.load_workbook(excel_path)
+if "Reliability" in wb.sheetnames:
+    del wb["Reliability"]
+ws = wb.create_sheet("Reliability")
+with open(reliability_csv, encoding="utf-8", newline="") as f:
+    for row in csv.reader(f):
+        ws.append(row)
+ws.append([])  # blank separator row
+ws.append(["NOTE: Percent agreement = proportion of statements where all 3 agents produced identical values. "
+           "Krippendorff's α (nominal) corrects for chance agreement; α ≥ 0.80 is the conventional reliability "
+           "threshold in content analysis (Krippendorff, 2004). For free-text component fields (A, I, Bdir, etc.) "
+           "exact-string matching is used — minor wording differences count as disagreements, so α for those fields "
+           "will tend to be conservative. Interpret α most strictly for closed-vocabulary fields: type, D, M, F."])
+wb.save(excel_path)
+print(f"Reliability sheet added to {excel_path}")
+```
 
 ---
 

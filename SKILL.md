@@ -478,24 +478,24 @@ print(f"Session state - step {state['current_step']} | coding_level={state['codi
 
    If the researcher replies **'single-agent'**: update Multi-Agent Mode to DISABLED and recalculate total calls as B × 1. If the researcher replies **'split'**: explain how to divide the statement list into sections (e.g., by article, chapter, or fixed count), then stop — do not dispatch until the researcher resubmits a section. If the researcher replies **'proceed'**: continue as below.
 
-Update the session state with batch configuration via Bash (substitute actual values):
+   Update the session state with batch configuration via Bash (substitute actual values):
 
-```python
-import json, os
-state_path = os.path.splitext(r"$ARGUMENTS")[0] + "_IG_session.json"
-with open(state_path, encoding="utf-8") as f:
-    state = json.load(f)
-state["batch_config"] = {
-    "total_statements": TOTAL_STATEMENTS,  # integer
-    "batch_size": 50,
-    "num_batches": NUM_BATCHES,            # integer
-    "completed_batches": 0
-}
-state["current_step"] = "6"
-with open(state_path, "w", encoding="utf-8") as f:
-    json.dump(state, f, indent=2)
-print(f"State updated: {TOTAL_STATEMENTS} statements, {NUM_BATCHES} batch(es)")
-```
+   ```python
+   import json, os
+   state_path = os.path.splitext(r"$ARGUMENTS")[0] + "_IG_session.json"
+   with open(state_path, encoding="utf-8") as f:
+       state = json.load(f)
+   state["batch_config"] = {
+       "total_statements": TOTAL_STATEMENTS,  # integer
+       "batch_size": 50,
+       "num_batches": NUM_BATCHES,            # integer
+       "completed_batches": 0
+   }
+   state["current_step"] = "6"
+   with open(state_path, "w", encoding="utf-8") as f:
+       json.dump(state, f, indent=2)
+   print(f"State updated: {TOTAL_STATEMENTS} statements, {NUM_BATCHES} batch(es)")
+   ```
 
    Dispatch 3 agents in parallel using `superpowers:dispatching-parallel-agents`. Each agent receives this instruction (substitute N = 1, 2, 3 for the run number, and paste the confirmed statement list for STATEMENT_LIST):
 

@@ -410,6 +410,16 @@ print(f"State updated: statement_list_path set, current_step=5")
 
 ### Step 6 — Encode Each Statement
 
+At the start of this step, read the session state via Bash:
+
+```python
+import json, os
+state_path = os.path.splitext(r"$ARGUMENTS")[0] + "_IG_session.json"
+with open(state_path, encoding="utf-8") as f:
+    state = json.load(f)
+print(f"Session state - step {state['current_step']} | coding_level={state['coding_level']} | multi_agent={state['multi_agent_mode']} | output={state['output_formats']}")
+```
+
 **If Multi-Agent Mode is ENABLED**, skip the encoding below and do this instead:
 
 1. Derive the document base path (directory + stem, no extension). For example: if `$ARGUMENTS` is `C:\path\to\document.pdf`, the base is `C:\path\to\document`.
@@ -467,6 +477,25 @@ print(f"State updated: statement_list_path set, current_step=5")
    > Reply **'proceed'** to continue as configured, **'single-agent'** to switch modes, or **'split'** for guidance on dividing the document.
 
    If the researcher replies **'single-agent'**: update Multi-Agent Mode to DISABLED and recalculate total calls as B × 1. If the researcher replies **'split'**: explain how to divide the statement list into sections (e.g., by article, chapter, or fixed count), then stop — do not dispatch until the researcher resubmits a section. If the researcher replies **'proceed'**: continue as below.
+
+Update the session state with batch configuration via Bash (substitute actual values):
+
+```python
+import json, os
+state_path = os.path.splitext(r"$ARGUMENTS")[0] + "_IG_session.json"
+with open(state_path, encoding="utf-8") as f:
+    state = json.load(f)
+state["batch_config"] = {
+    "total_statements": TOTAL_STATEMENTS,  # integer
+    "batch_size": 50,
+    "num_batches": NUM_BATCHES,            # integer
+    "completed_batches": 0
+}
+state["current_step"] = "6"
+with open(state_path, "w", encoding="utf-8") as f:
+    json.dump(state, f, indent=2)
+print(f"State updated: {TOTAL_STATEMENTS} statements, {NUM_BATCHES} batch(es)")
+```
 
    Dispatch 3 agents in parallel using `superpowers:dispatching-parallel-agents`. Each agent receives this instruction (substitute N = 1, 2, 3 for the run number, and paste the confirmed statement list for STATEMENT_LIST):
 
@@ -598,6 +627,16 @@ Where a component is absent, leave the field empty. Where a component contains m
 
 ### Step 6.5 — Merge Agent Outputs (Multi-Agent Mode only)
 
+At the start of this step, read the session state via Bash:
+
+```python
+import json, os
+state_path = os.path.splitext(r"$ARGUMENTS")[0] + "_IG_session.json"
+with open(state_path, encoding="utf-8") as f:
+    state = json.load(f)
+print(f"Session state - step {state['current_step']} | batch_config={state['batch_config']}")
+```
+
 If Multi-Agent Mode is ENABLED, run the merge script via Bash:
 
 ```python
@@ -629,9 +668,32 @@ After the script completes:
 - Cross-check the consensus CSV statement IDs against your reference statement list from Step 6 item 3. If any statement you identified is absent from the consensus CSV (all 3 agents missed it), flag it explicitly: report those IDs to the researcher as "Statements identified by the orchestrator but absent from all agent outputs — require manual coding." Add a `review_flag = TRUE` row for each missing statement to the consensus CSV with all component fields empty and `disagreement_fields = "missing from all agent runs"`.
 - If in-chat markdown was selected, display each statement using the in-chat display format defined in the encoding section below. Use the consensus values from `consensus_csv` for each statement. For any statement where `review_flag = TRUE`, use the `[⚠ Sn] REVIEW REQUIRED` format defined there, including the `disagreement_fields` value on the "Flagged fields" line.
 
+Update the session state via Bash:
+
+```python
+import json, os
+state_path = os.path.splitext(r"$ARGUMENTS")[0] + "_IG_session.json"
+with open(state_path, encoding="utf-8") as f:
+    state = json.load(f)
+state["current_step"] = "6.5"
+with open(state_path, "w", encoding="utf-8") as f:
+    json.dump(state, f, indent=2)
+print("State updated: current_step=6.5")
+```
+
 ---
 
 ### Step 7 — Generate CSV / Excel Output (if selected)
+
+At the start of this step, read the session state via Bash:
+
+```python
+import json, os
+state_path = os.path.splitext(r"$ARGUMENTS")[0] + "_IG_session.json"
+with open(state_path, encoding="utf-8") as f:
+    state = json.load(f)
+print(f"Session state - step {state['current_step']} | output={state['output_formats']} | coding_level={state['coding_level']} | metrics={state['compute_metrics']}")
+```
 
 If the researcher selected CSV or Excel output, write the coded data to a file.
 
@@ -708,6 +770,16 @@ After writing, confirm the file path to the researcher.
 
 ### Step 8 — Generate IG Parser .txt Output (if selected)
 
+At the start of this step, read the session state via Bash:
+
+```python
+import json, os
+state_path = os.path.splitext(r"$ARGUMENTS")[0] + "_IG_session.json"
+with open(state_path, encoding="utf-8") as f:
+    state = json.load(f)
+print(f"Session state - step {state['current_step']} | output={state['output_formats']} | coding_level={state['coding_level']} | metrics={state['compute_metrics']}")
+```
+
 If the researcher selected IG Parser output, write a plain-text file formatted for the IG Parser.
 
 Derive the output filename from the input: `document_IG_parser.txt` in the same directory.
@@ -734,6 +806,16 @@ Use the Write tool to write this file directly. After writing, confirm the file 
 
 ### Step 9 — Summary Table (always shown in-chat)
 
+At the start of this step, read the session state via Bash:
+
+```python
+import json, os
+state_path = os.path.splitext(r"$ARGUMENTS")[0] + "_IG_session.json"
+with open(state_path, encoding="utf-8") as f:
+    state = json.load(f)
+print(f"Session state - step {state['current_step']} | output={state['output_formats']} | coding_level={state['coding_level']} | metrics={state['compute_metrics']}")
+```
+
 Regardless of output format selection, always display a summary table:
 
 **Regulative statements:**
@@ -757,6 +839,16 @@ If no statements were flagged, write: *All statements reached consensus across a
 
 ### Step 10 — Coding Notes & Ambiguities
 
+At the start of this step, read the session state via Bash:
+
+```python
+import json, os
+state_path = os.path.splitext(r"$ARGUMENTS")[0] + "_IG_session.json"
+with open(state_path, encoding="utf-8") as f:
+    state = json.load(f)
+print(f"Session state - step {state['current_step']} | output={state['output_formats']} | coding_level={state['coding_level']} | metrics={state['compute_metrics']}")
+```
+
 Report:
 - Statements with uncertain classification (suggest polymorphic treatment)
 - Components that required inference — noted with `[ ]` in IG Script
@@ -768,6 +860,16 @@ Report:
 ---
 
 ### Step 11 — Institutional Complexity Metrics *(IG Extended / IG Logico only; skip if Compute Metrics = disabled)*
+
+At the start of this step, read the session state via Bash:
+
+```python
+import json, os
+state_path = os.path.splitext(r"$ARGUMENTS")[0] + "_IG_session.json"
+with open(state_path, encoding="utf-8") as f:
+    state = json.load(f)
+print(f"Session state - step {state['current_step']} | output={state['output_formats']} | coding_level={state['coding_level']} | metrics={state['compute_metrics']}")
+```
 
 Run `complexity.py` on the coded CSV and write the metrics to a `_IG_metrics.csv` file.
 

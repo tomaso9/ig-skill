@@ -14,6 +14,7 @@ Source: IG 2.0 Codebook v1.4, Section 4.2
 2. Where a component is absent from the coded sentence, **only use `[ ]` when the value can be sourced from the same sentence, the immediately adjacent sentence, or (with a note) the same paragraph** — see Actor Sourcing Rules in `04-heuristics.md`. Do not infer from broader document context or training knowledge. If the component cannot be sourced within those bounds, leave the field empty and note it.
 3. Attribute properties use `,p` suffix; objects similarly
 4. Context defaults: no Activation Condition → *"under all conditions"*; no Execution Constraint → *"no constraints"*. Do not write these defaults into the fields — leave them empty. Only populate Cac and Cex with text that appears in the source.
+5. **Verbatim extraction:** Every component value must be a verbatim substring of the statement's source text — copied exactly, not paraphrased, reordered, normalized, or summarized. The only permitted non-verbatim content is: (a) `[ ]`-bracketed reconstruction under the Actor Sourcing Rules in `04-heuristics.md` (an actor name copied exactly from the source, or exactly `[any person]`), and (b) mechanically reconstructed nominalized verbs (e.g., *"submission of X"* → `I([submits])`). Logical-operator decomposition may split the text, but each fragment must remain a verbatim substring. If a component cannot be filled verbatim, leave it empty and explain in `notes`.
 
 ### Component-by-Component Guidelines
 
@@ -32,7 +33,7 @@ A,p(Certified) A(farmer) D(must) I(submit) Bdir(organic system plan) Cex(annuall
 - The deontic sits on a continuum; encode the explicit language used
 
 ```
-A(certifier) D(must) I(notify) Bind(farmer) Bdir(of compliance).
+A(certifier) D(must) I(send) Bind(farmer) Bdir(notification of compliance).
 ```
 
 #### Aim (I)

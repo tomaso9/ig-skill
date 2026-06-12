@@ -52,6 +52,8 @@ Not all sentences containing "means," "is," or "consists of" are constitutive. A
 Necessary: **E** (Constituted Entity), **F** (Constitutive Function), **Context** (Cac/Cex, may be implied).
 Optional: **M** (Modal), **P** (Constituting Properties), **O** (Or else).
 
+**Verbatim extraction:** Every component value must be a verbatim substring of the statement's source text — copied exactly, not paraphrased, reordered, or summarized. The only permitted non-verbatim content is `[ ]`-bracketed reconstruction under the sourcing rules in `04-heuristics.md`. If a component cannot be filled verbatim, leave it empty and explain in `notes`.
+
 ### Component Guidelines
 
 #### Constituted Entity (E)
@@ -95,7 +97,7 @@ Cac and Cex apply to constitutive statements with the same force as to regulativ
 
 **When Cac/Cex is genuinely absent:** Pure definitional statements (*"X means Y"*) without temporal, conditional, or procedural qualifiers have no Cac/Cex. Leave both fields empty — do not infer a universal condition.
 
-**Signal to check:** Any adverbial clause, dependent clause, or prepositional phrase that is not core to P should be evaluated as Cac or Cex before leaving the fields empty. Apply the decision guide in [04-heuristics.md](04-heuristics.md#activation-condition-vs-execution-constraint-decision-guide).
+**Signal to check:** Any adverbial clause, dependent clause, or prepositional phrase that is not core to P should be evaluated as Cac or Cex before leaving the fields empty. Apply the Cac/Cex decision guide at the top of [04-heuristics.md](04-heuristics.md#activation-condition-cac-vs-execution-constraint-cex).
 
 #### Or else (O)
 - Consequence of non-fulfillment; can be **existential** (e.g., invalidation)
@@ -152,26 +154,18 @@ Here the activation condition could itself be expressed as a nested institutiona
 
 ## IG Logico — Constitutive Statements
 
-Adds semantic annotations using Constitutive Functions taxonomy.
+Adds semantic annotations using the Constitutive Functions taxonomy (Codebook v1.4, Section 5.6, Figure 16). The annotation label prefix is **`confunc`**. See `08-logico-annotations.md` for the full taxonomy and decision guidance — do not use any labels other than those listed there.
 
-### Constitutive Functions (constfunc annotation)
-
-Annotate the Constitutive Function (F) component:
-- `define` — definitional statements
-- `establish` — creation of entities or positions
-- `confer` — conferral of rights, authority, status
-- `modify` — modification of existing entities
-- `qualify` — eligibility or boundary criteria
-- `scope` — outcomes or scope of an action situation
+Codebook worked examples:
 
 ```
-E(Secretary) F[constfunc=define](means) P(the Secretary of Agriculture).
+E(diverse population) F[confunc=definition](means)
+P((diversity in religion [AND] sexual orientation [AND] race)).
 ```
 
 ```
-Cac(From January 1st onward), E(National Organic Standards Advisory Council)
-M[stringency=necessity](shall) F[constfunc=establish](be)
-P(within the Department of Agriculture).
+Cac(Starting January 1st), the E(Connecticut Food Policy Council) M(shall)
+F[confunc=organization](be within) the Cex(Department of Agriculture).
 ```
 
 ---

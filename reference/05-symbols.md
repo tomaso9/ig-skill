@@ -159,7 +159,7 @@ componentSymbol[taxonomy=value; taxonomy=value](content)
 | Metatype | `metatype` | `concrete`, `abstract` | Same as Animacy |
 | Role | `role` | `originator`, `recipient`, `possessor`, `experiencer`, `advantaged`, `disadvantaged` | A, Bdir, Bind, E, P (and props) |
 | Regulative Function | `regfunc` | `comply`, `violate`, `detect compliance`, `detect violation`, `reward`, `sanction`, `accept`, `reject`, `appeal` | I (Aim) only |
-| Constitutive Function | `constfunc` | `define`, `relate`, `lifecycle`, `confer`, `purpose`, `substitute`, `amend` | F only |
+| Constitutive Function | `confunc` | entity-directed: `definition`, `functional`, `composition`, `organization`, `lifecycle`, `conferral` · policy-directed: `lifecycle`, `relationship`, `intent`, `information` (Codebook Fig. 16) | F only |
 | Context Type | `ctx` | `temporal`, `spatial`, `domain`, `procedural`, `method`, `purpose`, `effect`, `state`, `event` | Cac, Cex |
 | Statement Type | `stype` | `monitored`, `consequential`, `monitoring` | Statement level (precedes `{`) |
 | Consequence | `consequence` | `social`, `configurational` | O (Or-else) |

@@ -1,9 +1,15 @@
 """
 Multi-agent IG coding merge and flag script.
 
-Compares three independently coded CSVs field by field. Any field where
-the three values are not all identical is flagged for human review.
-Consensus value: majority vote (2-vs-1), or run1 fallback when all differ.
+Compares three independently coded CSVs field by field. Values are
+normalized before comparison (casefold, collapse whitespace, strip leading
+articles the/a/an, strip trailing punctuation) so trivial wording variants
+do not count as disagreements. Any field where the three normalized values
+are not all identical is flagged for human review; the review CSV preserves
+each agent's raw value.
+
+Consensus value: the raw value of the first run in the normalized-majority
+group (2-vs-1), or UNDETERMINED when all three normalized values differ.
 
 Usage:
     python merge.py agent1.csv agent2.csv agent3.csv consensus.csv review.csv
@@ -30,7 +36,7 @@ FIELDNAMES = [
     "Bdir", "Bdir_prop", "Bind", "Bind_prop",
     "Cac", "Cex", "O",
     "E", "E_prop", "M", "F", "P", "P_prop",
-    "ig_script_full", "notes",
+    "ig_script_full", "notes", "skill_version",
 ]
 
 COMPARE_FIELDS = [
@@ -53,11 +59,27 @@ def load_csv(path):
     return rows
 
 
-def _majority_or_first(values):
-    """Return majority value (count > 1), or UNDETERMINED if all three differ."""
-    counts = Counter(values)
-    top_value, top_count = counts.most_common(1)[0]
-    return top_value if top_count > 1 else "UNDETERMINED"
+_ARTICLE_RE = re.compile(r'^(?:the|a|an)\s+')
+
+
+def normalize(value):
+    """Normalize a field value for comparison: casefold, collapse whitespace,
+    strip leading articles (the/a/an) and trailing punctuation."""
+    v = re.sub(r'\s+', ' ', value.strip()).casefold()
+    v = _ARTICLE_RE.sub('', v)
+    return v.rstrip('.,;:')
+
+
+def _consensus_raw(values, norm_vals):
+    """Pick the consensus raw value from normalized voting.
+
+    Majority normalized value (count > 1): return the first run's raw value in
+    that group. All three normalized values differ: UNDETERMINED."""
+    counts = Counter(norm_vals)
+    top_norm, top_count = counts.most_common(1)[0]
+    if top_count > 1:
+        return next(v for v, nv in zip(values, norm_vals) if nv == top_norm)
+    return "UNDETERMINED"
 
 
 def merge_three(paths, consensus_path, review_path):
@@ -91,15 +113,17 @@ def merge_three(paths, consensus_path, review_path):
             else:
                 consensus_row[field] = ""
 
-        # Compare fields: flag any disagreement
+        # Compare fields: flag any disagreement (after normalization)
         disagreeing_fields = []
         for field in COMPARE_FIELDS:
             values = [rr.get(field, "").strip() for rr in run_rows]
-            if len(set(values)) == 1:
-                consensus_row[field] = values[0]
+            norm_vals = [normalize(v) for v in values]
+            if len(set(norm_vals)) == 1:
+                # Agreement after normalization — prefer the most common raw form
+                consensus_row[field] = Counter(values).most_common(1)[0][0]
             else:
                 disagreeing_fields.append(field)
-                chosen = _majority_or_first(values)
+                chosen = _consensus_raw(values, norm_vals)
                 consensus_row[field] = chosen
                 review_rows.append({
                     "id": sid,

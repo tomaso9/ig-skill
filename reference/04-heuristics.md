@@ -2,6 +2,76 @@
 
 Source: IG 2.0 Codebook v1.4, Sections 2.5, 3
 
+This file is organized decision-first: the flowcharts and sourcing rules coders need constantly are at the top; supporting detail and rationale follow. Section pointers: [Actor Sourcing Rules](#actor-sourcing-rules) · [Pre-Coding Steps](#pre-coding-steps) · [NON-IS criteria](#non-institutional-statements-non-is) · [REG vs. CONST heuristics](#heuristics-for-identifying-statement-types-reg-vs-const) · [Recurring type-boundary problems](#recurring-type-boundary-problems).
+
+---
+
+## Quick Decision Flowcharts
+
+### Statement type (REG / CONST / NON-IS)
+
+```
+Does the statement describe rationale or purpose only (no modal, no actor)?
+└── YES → NON-IS (goal/purpose pattern)
+
+Does the statement have a modal (shall, must, will, is required)?
+├── Animate subject or actor identifiable within proximity window?
+│   └── YES → REG (use Actor Sourcing Rules for A)
+└── Inanimate subject?
+    ├── Subject is a process/document/instrument being constituted?
+    │   └── YES → CONST
+    └── Subject is a person-shaped obligation missing its actor?
+        └── YES → REG (leave A empty per Priority 5)
+```
+
+Apply the [normative force test](#step-1-apply-the-normative-force-test-first) first — a statement with an actor and a verb but no prescriptive or constitutive force is NON-IS. For the surface forms that consistently generate disagreement, the [recurring type-boundary rules](#recurring-type-boundary-problems) take precedence over this flowchart.
+
+### Activation Condition (Cac) vs. Execution Constraint (Cex)
+
+```
+Is the clause a precondition that activates the entire non-context part of the statement?
+├── YES → Does it signal a discrete setting (temporal, spatial, event)?
+│         ├── YES → ACTIVATION CONDITION (Cac)
+│         └── NO  → EXECUTION CONSTRAINT (Cex)
+└── NO  → Does it qualify the way the action is performed?
+          └── YES → EXECUTION CONSTRAINT (Cex)
+```
+
+**Key terms by type:**
+
+| Activation Condition signals | Execution Constraint signals |
+|-----------------------------|------------------------------|
+| *when*, *upon*, *starting*, *in the event that*, *once*, *after* (event) | *especially*, *particularly*, *specifically*, *in accordance with*, *annually*, *in person* |
+
+**Context-clause interdependencies**: If clause B can only apply once clause A is satisfied, A is the activation condition and B is the execution constraint. If both must be satisfied together to activate the statement, both are activation conditions.
+
+---
+
+## Actor Sourcing Rules
+
+These rules determine when `[ ]` may be used for the Attribute and what goes in it. Apply them in order — use the first rule that matches.
+
+| Priority | Situation | Action |
+|----------|-----------|--------|
+| 1 | Actor named explicitly in the **same sentence** (passive construction with "by [actor]" or equivalent) | Convert to active; use `[ ]` with actor's exact name from text |
+| 2 | Actor named explicitly in the **immediately preceding or following sentence** | Convert to active; use `[ ]` with actor's exact name from text |
+| 3 | Actor named explicitly **elsewhere in the same paragraph** | Use `[ ]` with actor's exact name; add note: *"actor inferred from paragraph [N]"* |
+| 4 | Statement is an **impersonal prohibition** (*"X is prohibited"*, *"no person shall"*) **or an impersonal obligation** (*"X must be done"*, *"Y shall conform"*, *"Z are required to…"*) where the duty is universal — no actor class is specified or recoverable from the proximity window | Use `[any person]`. This encodes the semantic universal of the statement. **Only this exact form is permitted** — do not write `[any person or entity]`, `[person/user]`, `[person or entity]`, `[regulated entity]`, or any other variation. |
+| 5 | Actor not present within the same paragraph | Leave `A` **empty**; add note: *"actor absent from text — manual coding required"* |
+
+**Never use `[actor]`, `[actor inferred from context]`, `[any person or entity]`, `[person/user]`, `[regulated entity]`, or any other invented label.** Exactly two forms are permitted inside `[ ]`: (1) an actor name copied verbatim from the source text, or (2) `[any person]` under Priority 4. Nothing else.
+
+### Passive-to-Active Conversion (IG Core recommended)
+
+Convert passive statements to active form **only when the actor appears explicitly in the source text within the proximity window defined above**. Mark the reconstructed actor with `[ ]` using its exact name as it appears in the text — do not paraphrase, generalize, or substitute.
+
+- Original: *"Notifications of compliance must be sent to farmers within 30 days of facility inspections."*
+- Active (actor named in same paragraph): *"[Certifier] must send farmers notifications of compliance within 30 days of facility inspections."*
+
+Do **not** infer an actor from document-wide knowledge, general regulatory patterns, or training knowledge. If the actor cannot be identified from the proximity window, do not reconstruct the passive form.
+
+**Hint (codebook p. 65):** When a statement contains an aim linked to an object as a noun (passive construction), this signals a missing or implied actor. Check prepositional clauses such as "by [actor]" for clues. If found, that actor is the Attribute; if not found within the same paragraph, leave `A` empty.
+
 ---
 
 ## Pre-Coding Steps
@@ -24,31 +94,6 @@ Source: IG 2.0 Codebook v1.4, Sections 2.5, 3
 - Remove extraneous punctuation: bullets, roman numerals, section labels
 - Fix typos that impede parsing
 - Preserve all text content (do not delete non-IS text; mark it `NON-IS`)
-
-### Passive-to-Active Conversion (IG Core recommended)
-
-Convert passive statements to active form **only when the actor appears explicitly in the source text within a defined proximity window** (see Actor Sourcing Rules below). Mark the reconstructed actor with `[ ]` using its exact name as it appears in the text — do not paraphrase, generalize, or substitute.
-
-- Original: *"Notifications of compliance must be sent to farmers within 30 days of facility inspections."*
-- Active (actor named in same paragraph): *"[Certifier] must send farmers notifications of compliance within 30 days of facility inspections."*
-
-Do **not** infer an actor from document-wide knowledge, general regulatory patterns, or training knowledge. If the actor cannot be identified from the proximity window, do not reconstruct the passive form.
-
-### Actor Sourcing Rules
-
-These rules determine when `[ ]` may be used and what goes in it. Apply them in order — use the first rule that matches.
-
-| Priority | Situation | Action |
-|----------|-----------|--------|
-| 1 | Actor named explicitly in the **same sentence** (passive construction with "by [actor]" or equivalent) | Convert to active; use `[ ]` with actor's exact name from text |
-| 2 | Actor named explicitly in the **immediately preceding or following sentence** | Convert to active; use `[ ]` with actor's exact name from text |
-| 3 | Actor named explicitly **elsewhere in the same paragraph** | Use `[ ]` with actor's exact name; add note: *"actor inferred from paragraph [N]"* |
-| 4 | Statement is an **impersonal prohibition** (*"X is prohibited"*, *"no person shall"*) **or an impersonal obligation** (*"X must be done"*, *"Y shall conform"*, *"Z are required to…"*) where the duty is universal — no actor class is specified or recoverable from the proximity window | Use `[any person]`. This encodes the semantic universal of the statement. **Only this exact form is permitted** — do not write `[any person or entity]`, `[person/user]`, `[person or entity]`, `[regulated entity]`, or any other variation. |
-| 5 | Actor not present within the same paragraph | Leave `A` **empty**; add note: *"actor absent from text — manual coding required"* |
-
-**Never use `[actor]`, `[actor inferred from context]`, `[any person or entity]`, `[person/user]`, `[regulated entity]`, or any other invented label.** Exactly two forms are permitted inside `[ ]`: (1) an actor name copied verbatim from the source text, or (2) `[any person]` under Priority 4. Nothing else.
-
-**Hint (codebook p. 65):** When a statement contains an aim linked to an object as a noun (passive construction), this signals a missing or implied actor. Check prepositional clauses such as "by [actor]" for clues. If found, that actor is the Attribute; if not found within the same paragraph, leave `A` empty.
 
 ### Statement Decomposition (Pre-processing for IG Core)
 
@@ -132,7 +177,7 @@ Identify each zone during Step 4 pre-coding familiarization. When a candidate st
 
 ### Recurring Type-Boundary Problems
 
-Apply these rules to specific surface forms that consistently generate inter-coder disagreement. They take precedence over the general heuristics above when the pattern matches.
+Apply these rules to specific surface forms that consistently generate inter-coder disagreement. They take precedence over the general heuristics above (and over the summary flowchart at the top of this file) when the pattern matches.
 
 ---
 
@@ -202,36 +247,6 @@ Encode: `E(permit) M(is) F(required) P(to operate in Zone I)`. If the condition 
 
 ---
 
-#### Summary decision flowchart for the five patterns above
-
-```
-Does the statement describe rationale or purpose only (no modal, no actor)?
-└── YES → NON-IS (goal/purpose pattern)
-
-Does the statement have a modal (shall, must, will, is required)?
-├── Animate subject or actor identifiable within proximity window?
-│   └── YES → REG (use Actor Sourcing Rules for A)
-└── Inanimate subject?
-    ├── Subject is a process/document/instrument being constituted?
-    │   └── YES → CONST
-    └── Subject is a person-shaped obligation missing its actor?
-        └── YES → REG (leave A empty per Priority 5)
-```
-
----
-
-## Interpretational Scope
-
-When a statement is ambiguous between regulative and constitutive:
-
-**Narrow scope**: Focus on the statement in isolation, including its direct semantics and function. Does not resolve links to other statements. → Tends toward constitutive for overarching parametric statements.
-
-**Wide scope**: Resolve semantic links to other statements; may reconstruct the statement in behavioral terms. → Tends toward regulative via actor reconstruction.
-
-**Best practice**: Define the interpretational scope at the beginning of the study/coding exercise and apply consistently.
-
----
-
 ## Statements with Both Regulative and Constitutive Features
 
 Some statements serve both regulative and constitutive functions simultaneously. HYB is **not a valid type** — every statement must be resolved to either REG or CONST based on its primary institutional function.
@@ -267,21 +282,12 @@ Some statements can be legitimately read as either REG or CONST (e.g., rights st
 
 ---
 
-## Activation Condition vs. Execution Constraint: Decision Guide
+## Interpretational Scope
 
-```
-Is the clause a precondition that activates the entire non-context part of the statement?
-├── YES → Does it signal a discrete setting (temporal, spatial, event)?
-│         ├── YES → ACTIVATION CONDITION (Cac)
-│         └── NO  → EXECUTION CONSTRAINT (Cex)
-└── NO  → Does it qualify the way the action is performed?
-          └── YES → EXECUTION CONSTRAINT (Cex)
-```
+When a statement is ambiguous between regulative and constitutive:
 
-**Key terms by type:**
+**Narrow scope**: Focus on the statement in isolation, including its direct semantics and function. Does not resolve links to other statements. → Tends toward constitutive for overarching parametric statements.
 
-| Activation Condition signals | Execution Constraint signals |
-|-----------------------------|------------------------------|
-| *when*, *upon*, *starting*, *in the event that*, *once*, *after* (event) | *especially*, *particularly*, *specifically*, *in accordance with*, *annually*, *in person* |
+**Wide scope**: Resolve semantic links to other statements; may reconstruct the statement in behavioral terms. → Tends toward regulative via actor reconstruction.
 
-**Context-clause interdependencies**: If clause B can only apply once clause A is satisfied, A is the activation condition and B is the execution constraint. If both must be satisfied together to activate the statement, both are activation conditions.
+**Best practice**: Define the interpretational scope at the beginning of the study/coding exercise and apply consistently.

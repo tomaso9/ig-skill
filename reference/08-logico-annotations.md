@@ -119,19 +119,35 @@ Annotates the institutional function of the regulated activity. Select the label
 
 ---
 
-## 5. Constitutive Functions Taxonomy (`constfunc=`)
+## 5. Constitutive Functions Taxonomy (`confunc=`)
 
-**Applies to:** F (Constitutive Function) only
+**Applies to:** F (Constitutive Function) only. The annotation label prefix per the codebook is **`confunc`** (Codebook v1.4, Section 5.6).
 
-| Category | Value | Description | Example verbs/patterns |
-|----------|-------|-------------|----------------------|
-| **Entity definition** | `define` | Introduces or defines an entity in the institutional setting | means, is defined as, shall mean, refers to |
-| **Relationship** | `relate` | Establishes a structural or functional relationship between entities | consists of, includes, is composed of, is embedded in |
-| **Lifecycle** | `lifecycle` | Marks a change in an entity's lifecycle status | is established, is dissolved, takes effect, expires |
-| **Status conferral** | `confer` | Assigns rights, authority, powers, privileges, or liabilities | has the right to, is authorized to, is eligible for, is liable for |
-| **Meta-constitutive** | `purpose` | States the purpose or objective of the institution itself | is intended to, aims to, serves the purpose of |
-| | `substitute` | Replaces or supersedes another provision | replaces, supersedes, amends, nullifies |
-| | `amend` | Modifies an existing provision without replacing it | is amended to, is revised to, is supplemented by |
+The taxonomy (Codebook Figure 16) first distinguishes whether the constituted entity is a specific **entity** in the institutional setting or the **institution/policy itself**, then categorizes the function. Annotate with the **most specific label that fits** — the codebook's own worked examples use leaf labels (e.g., `confunc=composition`, not a generic relationship label).
+
+### Entity-directed functions
+
+| Label | Description (per Fig. 16) | Signal patterns |
+|-------|---------------------------|-----------------|
+| `definition` | Defines an actor, object, role, or action — intensionally (*«is»*) or extensionally/by ascription (*«does»*) | *means*, *is defined as*, *is*, *does* |
+| `functional` | Functional relationship between entities | *is controlled by* |
+| `composition` | Compositional relationship | *consists of* |
+| `organization` | Organizational embedding or hierarchy | *is embedded in*, *relates to*, *be within* |
+| `lifecycle` | Initiation, suspension, or termination of an entity lifecycle | *established*, *suspended*, *terminated* |
+| `conferral` | Conferral of status — honorary, or legal (rights, power, privileges, liability) | *is assigned*, *has the right to*, *has the authority to*, *is entitled to*, *is responsible for* |
+
+### Institution(policy)-directed functions
+
+| Label | Description (per Fig. 16) | Signal patterns |
+|-------|---------------------------|-----------------|
+| `lifecycle` | Policy lifecycle | *comes into force*, *concludes* |
+| `relationship` | Relationship to other policies | *amends*, *substitutes*, *supersedes* |
+| `intent` | Purpose or intent underlying the policy | *The purpose of this policy is …* |
+| `information` | Supplementary information about the policy, or institutional facts contextualizing the policy or domain | *This policy regulates …* |
+
+**Codebook worked examples:** `F[confunc=definition](means)`, `F[confunc=composition](consist of)`, `F[confunc=organization](be within)`, `F[confunc=intent](is)` (in a purpose-of-this-Part statement).
+
+The codebook notes this taxonomy "is subject to further refinement based on ongoing empirical validation efforts." If no label fits, leave F unannotated and record the case in `notes` — do not invent new labels.
 
 ---
 
@@ -178,7 +194,7 @@ O[consequence=configurational]{E(approved operation) M(shall) [NOT] F(be valid) 
 | `metatype=` | ✓ | ✓ | — | — | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — | ✓ | ✓ | — |
 | `role=`  | ✓ | ✓ | — | — | ✓ | ✓ | ✓ | ✓ | — | — | ✓ | ✓ | — | ✓ | ✓ | — |
 | `regfunc=` | — | — | — | ✓ | — | — | — | — | — | — | — | — | — | — | — | — |
-| `constfunc=` | — | — | — | — | — | — | — | — | — | — | — | — | ✓ | — | — | — |
+| `confunc=` | — | — | — | — | — | — | — | — | — | — | — | — | ✓ | — | — | — |
 | `ctx=`   | — | — | — | — | — | — | — | — | ✓ | ✓ | — | — | — | — | — | — |
 | `stype=` | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | ✓ |
 | `consequence=` | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | ✓ |

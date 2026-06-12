@@ -82,23 +82,28 @@ START: /ig-code <file>
 │   │
 │   ├─ Multi-agent mode = YES
 │   │   │
-│   │   ├─ Statement count ≤ 50?
+│   │   ├─ Statement count ≤ 25?
 │   │   │   ├─ YES ── 1 batch, 3 agents
-│   │   │   └─ NO  ── N batches of up to 50 statements each
+│   │   │   └─ NO  ── N batches of up to 25 statements each
 │   │   │             (if total agent calls > 9: large-doc warning shown)
 │   │   │
-│   │   ├─ Step 6:   Orchestrator reads reference files, pre-assigns types,
-│   │   │            dispatches 3 agents in parallel per batch
-│   │   │            Each agent encodes using inline reference → AGENT_DATA
+│   │   ├─ Step 6:   Orchestrator pre-assigns types and dispatches 3 agents
+│   │   │            in parallel per batch. Each agent reads the IG 2.0
+│   │   │            reference files directly (read-only) → AGENT_DATA
+│   │   │            Each agent CSV is checked by validate.py; agents that
+│   │   │            fail structural validation are re-dispatched once
 │   │   │
 │   │   └─ Step 6.5: Merge three outputs
 │   │                Field-by-field comparison → majority vote (2-of-3)
+│   │                Values normalized before voting (case, leading articles,
+│   │                trailing punctuation) so trivial variants don't flag
 │   │                All three differ → UNDETERMINED (flagged for review)
 │   │                Computes inter-coder reliability (% agreement + Krippendorff's α)
 │   │                Writes: <doc>_IG_coded.csv + <doc>_IG_review.csv + <doc>_IG_reliability.csv
 │   │
 │   └─ Multi-agent mode = NO
-│       └─ Step 6: Single agent encodes all statements sequentially
+│       └─ Step 6: Single agent encodes all statements sequentially,
+│                  then validates its own output with validate.py
 │
 ├─ Step 7:  Write CSV / Excel output       (if selected)
 ├─ Step 8:  Write IG Parser .txt output    (if selected)
@@ -149,11 +154,12 @@ When enabled, three independent Claude agents code the document in parallel. Any
 
 ### How it works
 
-1. **Pre-dispatch:** The orchestrator assigns statement types (REG/CONST/NON-IS) and reads all required IG 2.0 reference materials. Agents receive the reference content inline in their task prompt — they do not read any files themselves.
-2. **Dispatch:** Three agents code the statements in parallel, each producing a structured data block.
-3. **Merge:** Disagreements are detected field by field. Consensus values are determined by majority vote (2-of-3). If all three agents produce different values for a field, that field is set to **`UNDETERMINED`** and flagged for human adjudication.
-4. **Cross-check:** The consensus statement list is compared against the orchestrator's reference list. Any statement missed by all three agents is flagged explicitly.
-5. **Output:** Your chosen format(s) are produced from the consensus values. Flagged statements are marked `⚠` throughout.
+1. **Pre-dispatch:** The orchestrator assigns statement types (REG/CONST/NON-IS) and determines which IG 2.0 reference files apply (by coding level and statement mix). Agents receive the file paths and read the reference files directly (read-only) — guaranteeing byte-exact guidelines rather than re-transcribed content.
+2. **Dispatch:** Three agents code the statements in parallel, each producing a structured data block. Agents are bound by a verbatim-extraction rule: component values must be exact substrings of the source statement.
+3. **Validate:** Each agent's CSV is checked by `validate.py` against the authoritative statement list (no missing/extra/duplicated statements, types unchanged, NON-IS rows empty, necessary components present, balanced IG Script brackets, required `[ctx=...]` annotations at IG Extended+, no invented actor labels). An agent that fails is re-dispatched once with the error list.
+4. **Merge:** Disagreements are detected field by field. Values are normalized before comparison (casefold, collapse whitespace, strip leading articles and trailing punctuation) so trivial wording variants don't count as disagreements; the review CSV preserves each agent's raw value. Consensus values are determined by majority vote (2-of-3) on the normalized values. If all three agents produce different values for a field, that field is set to **`UNDETERMINED`** and flagged for human adjudication.
+5. **Cross-check:** The consensus statement list is compared against the orchestrator's reference list. Any statement missed by all three agents is flagged explicitly.
+6. **Output:** Your chosen format(s) are produced from the consensus values. Flagged statements are marked `⚠` throughout.
 
 ### Multi-agent outputs
 
@@ -203,9 +209,24 @@ Single-agent mode is faster and appropriate for exploratory work or documents wh
 
 ## Session State
 
-After each step, the skill writes a `<document>_IG_session.json` file alongside your outputs. This file records all confirmed session settings: input path and type, coding level, output formats, multi-agent mode, metrics selection, statement list path, current step, and batch configuration.
+After each step, the skill writes a `<document>_IG_session.json` file alongside your outputs (managed by the `session.py` helper script). This file records all confirmed session settings: input path and type, skill version, coding level, output formats, multi-agent mode, metrics selection, statement list path, current step, and batch configuration.
 
 If a session is interrupted or the context window is compressed mid-session, the skill reads this file at the start of each step to recover its state rather than relying on in-context memory.
+
+## Versioning
+
+The skill carries a `VERSION` file. The version is recorded in the session state and stamped into every coded CSV as a `skill_version` column, so outputs produced under different guideline revisions can be told apart — important when comparing reliability results across rounds of guideline changes.
+
+## Helper Scripts
+
+| Script | Purpose |
+|--------|---------|
+| `session.py` | Initialize / read / update the session state file |
+| `write_rows.py` | Write statement lists and coded CSVs from JSON row data (natural ID sort, version stamping) |
+| `validate.py` | Structural validation gate for coded CSVs (see Multi-Agent Mode step 3); also run on single-agent output |
+| `merge.py` | Merge three agent CSVs into consensus + review outputs (normalized voting) |
+| `reliability.py` | Percent agreement + Krippendorff's α per field |
+| `complexity.py` | Institutional complexity metrics (ISC, ISR, tree depth, Table 8.7 measures) |
 
 ---
 
@@ -240,6 +261,9 @@ Written as `<document_name>_IG_coded.csv` (or `.xlsx`) in the same directory as 
 | `P_prop` | Constituting Properties properties |
 | `ig_script_full` | Full IG Script encoded statement |
 | `notes` | Coder notes and ambiguity flags |
+| `skill_version` | Skill/guideline version that produced the row (from the `VERSION` file) |
+
+The coded CSV is always written — even if you select only in-chat output — because it is the input for validation and complexity metrics.
 
 ### IG Parser .txt
 

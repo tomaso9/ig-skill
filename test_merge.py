@@ -229,3 +229,105 @@ def test_review_csv_records_consensus_used(tmp_path):
 
     review = read_csv(r)
     assert review[0]["consensus_used"] == ""  # majority is ""
+
+
+# ---------------------------------------------------------------------------
+# merge_three — normalization before voting
+# ---------------------------------------------------------------------------
+
+def test_case_and_article_variants_not_flagged(tmp_path):
+    """'farmers' / 'Farmers' / 'the farmers' normalize identically — no flag."""
+    rows = [
+        [dict(BASE_ROW, A="farmers")],
+        [dict(BASE_ROW, A="Farmers")],
+        [dict(BASE_ROW, A="the farmers")],
+    ]
+    paths = make_paths(tmp_path, rows)
+    c = str(tmp_path / "consensus.csv")
+    r = str(tmp_path / "review.csv")
+    merge_three(paths, c, r)
+
+    consensus = read_csv(c)
+    assert consensus[0]["review_flag"] == "FALSE"
+    assert consensus[0]["A"] in {"farmers", "Farmers", "the farmers"}
+    assert read_csv(r) == []
+
+
+def test_trailing_punctuation_and_whitespace_not_flagged(tmp_path):
+    rows = [
+        [dict(BASE_ROW, Cex="annually.")],
+        [dict(BASE_ROW, Cex="annually")],
+        [dict(BASE_ROW, Cex="  annually ")],
+    ]
+    paths = make_paths(tmp_path, rows)
+    c = str(tmp_path / "consensus.csv")
+    r = str(tmp_path / "review.csv")
+    merge_three(paths, c, r)
+
+    consensus = read_csv(c)
+    assert consensus[0]["review_flag"] == "FALSE"
+    assert read_csv(r) == []
+
+
+def test_normalized_majority_vote(tmp_path):
+    """'The Certifier' and 'certifier' agree after normalization and outvote
+    'inspector'; consensus uses the raw value of the first run in the
+    majority group."""
+    rows = [
+        [dict(BASE_ROW, A="The Certifier")],
+        [dict(BASE_ROW, A="certifier")],
+        [dict(BASE_ROW, A="inspector")],
+    ]
+    paths = make_paths(tmp_path, rows)
+    c = str(tmp_path / "consensus.csv")
+    r = str(tmp_path / "review.csv")
+    merge_three(paths, c, r)
+
+    consensus = read_csv(c)
+    assert consensus[0]["review_flag"] == "TRUE"
+    assert consensus[0]["A"] == "The Certifier"
+
+    review = read_csv(r)
+    assert len(review) == 1
+    assert review[0]["run1_value"] == "The Certifier"
+    assert review[0]["run2_value"] == "certifier"
+    assert review[0]["run3_value"] == "inspector"
+
+
+def test_substantive_difference_still_flagged(tmp_path):
+    """Normalization must not mask genuine content differences."""
+    rows = [
+        [dict(BASE_ROW, A="farmers")],
+        [dict(BASE_ROW, A="certified farmers")],
+        [dict(BASE_ROW, A="farmers")],
+    ]
+    paths = make_paths(tmp_path, rows)
+    c = str(tmp_path / "consensus.csv")
+    r = str(tmp_path / "review.csv")
+    merge_three(paths, c, r)
+
+    consensus = read_csv(c)
+    assert consensus[0]["review_flag"] == "TRUE"
+    assert consensus[0]["A"] == "farmers"
+
+
+# ---------------------------------------------------------------------------
+# merge_three — skill_version passthrough
+# ---------------------------------------------------------------------------
+
+def test_skill_version_passthrough(tmp_path):
+    fieldnames = FIELDNAMES + ["skill_version"]
+    paths = []
+    for i in range(1, 4):
+        p = str(tmp_path / f"agent{i}.csv")
+        with open(p, "w", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerow(dict(BASE_ROW, skill_version="1.1.0"))
+        paths.append(p)
+    c = str(tmp_path / "consensus.csv")
+    r = str(tmp_path / "review.csv")
+    merge_three(paths, c, r)
+
+    consensus = read_csv(c)
+    assert consensus[0]["skill_version"] == "1.1.0"
